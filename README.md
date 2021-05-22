@@ -14,4 +14,6 @@ Model compare with it.
 You will see some plots with ggplot2 as well which does not need mentioning
 
 
-Thanks. Keep watching this space for some good stuff on R !!!
+Keep watching this space for some good stuff on R !!!
+
+Thanks !!!
