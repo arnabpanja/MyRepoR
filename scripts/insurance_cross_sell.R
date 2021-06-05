@@ -4,7 +4,7 @@
 library(tidyverse)
 library(janitor)
 library(xgboost)
-library(ROSE)
+library(ROSE) # for handling imbalanced classifications 
 
 train.data <- read_csv(file = "data/insurance_cross_sell/train.csv") %>% 
   janitor::clean_names() %>% 
@@ -13,17 +13,17 @@ train.data <- read_csv(file = "data/insurance_cross_sell/train.csv") %>%
 dim(train.data)
 names(train.data)
 
-train.data %>% count(gender, sort = TRUE)
-train.data %>% count(vehicle_age, sort = TRUE)
-train.data %>% count(response, sort = TRUE)
+# imbalanced data with less than 15% of minority class --------
+train.data %>% count(response, 
+                     sort = TRUE)
 
 set.seed(1234)
 
-# sample the training rows by 50% for training and test set
+# sample the training rows by 50% for training and test set ----
 train.index <- sample(1:nrow(train.data), 
                       round(0.5 * nrow(train.data), digits = 0))
 
-# subset the training data frame
+# subset the training data frame --------------------------------
 train.data.train <- train.data[train.index, ]
 # subset the testing data frame 
 train.data.test <- train.data[-train.index, ]
@@ -41,26 +41,29 @@ train.data.train[, c("gender",
 
 
 # handling imbalanced data ----------------------
-# train.data.rose <- ROSE::ROSE(formula = response ~ ., 
-#                               data = train.data.train[, -1], 
-#                               seed = 1)$data
 
 train.data.rose <- ROSE::ovun.sample(formula = response ~ ., 
                                      data = train.data.train[, -1], 
                                      method = "under", 
                                      N = min(train.data.train %>% 
                                                count(response) %>% 
-                                               select(n)) * 2, 
+             # for more than 20% of minority classes in proportion                             
+                                               select(n)) * 6, 
                                      seed = 1)$data
 
 
+# balancing the data to have 20% of minority class --------
+train.data.rose %>% count(response, 
+                     sort = TRUE)
+
+# convert to matrix for xg-boost model ---------------
 train.rose.mat <- as.matrix(train.data.rose)
 
 
-# train the model
+# train the model -------------------------------------
 set.seed(1234)
 
-# param list for Xgboost 
+# parameter list for Xg-boost --------------
 param_list <- list(eta = 0.15, 
                    max_depth = 6, 
                    min_child_weight = 1, 
@@ -79,7 +82,7 @@ xgb_cv <- xgb.cv(params = param_list,
                  print_every_n = 25)
 
 
-# best iteration 
+# best iteration ----------------------------------------------
 best_iter <- min(xgb_cv$evaluation_log[(xgb_cv$evaluation_log)$test_auc_mean == max((xgb_cv$evaluation_log)$test_auc_mean), ]$iter)
 
 
@@ -112,19 +115,20 @@ ggsave(filename = "plots/insurance_cross_sell/p_plot_auc_train.png",
        plot = p_plot_auc_train)
 
 
-# train the model using the best iteration number
+# train the model using the best iteration number ---------------
 set.seed(1234)
 
 
 xgboost_model <- xgboost(data = train.rose.mat[, -11], 
-                         label = as.matrix(train.rose.mat[, 11], drop = FALSE), 
+                         label = as.matrix(train.rose.mat[, 11], 
+                                           drop = FALSE), 
                          params = param_list, 
                          nrounds = best_iter, 
                          print_every_n = 25)
 
 
 
-# observe the model importance
+# observe the model importance --------------------------------
 xgb_model_imp_train <- xgb.importance(model = xgboost_model)
 
 p_feature_importances_train <- ggplot(data = xgb_model_imp_train) + 
@@ -160,30 +164,30 @@ train.data.test[, c("gender",
         MARGIN = 2, 
         FUN = function(x) as.integer(as.factor(x)))
 
-# use the model to make predictions 
+# use the model to make predictions  --------------------------
 set.seed(1234)
 
 pred_xgboost <- predict(object = xgboost_model, 
                         newdata = as.matrix(train.data.test)[, -c(1, 12)])
 
 
-# Max and Min Probabilities 
+# Max and Min Probabilities -------------------- 
 max(pred_xgboost)
 min(pred_xgboost)
 
-# error rate 
-mean(ifelse(pred_xgboost > 0.49, 1, 0) == as.matrix(train.data.test)[, 12])
+# success rate ---------------------------------
+mean(ifelse(pred_xgboost > 0.50, 1, 0) == as.matrix(train.data.test)[, 12])
 
 
 
-# correlation matrix 
-table("preds" = ifelse(pred_xgboost > 0.49, 1, 0), 
+# correlation matrix  ----------------------------
+table("preds" = ifelse(pred_xgboost > 0.50, 1, 0), 
       "actuals" = as.matrix(train.data.test)[, 12])
 
 
 
-# correlation table 
-cbind("preds" = ifelse(pred_xgboost > 0.49, 1, 0), 
+# correlation table ------------------------------
+cbind("preds" = ifelse(pred_xgboost > 0.50, 1, 0), 
       "actuals" = as.matrix(train.data.test)[, 12]
 ) %>% as_tibble() %>% 
   group_by(preds, actuals) %>% 
@@ -192,7 +196,7 @@ cbind("preds" = ifelse(pred_xgboost > 0.49, 1, 0),
 
 
 
-# THIRD and FINAL ATTEMPT --------------------------------------
+
 # now let us apply the whole logic to the actual training data ---- 
 # including cross validation to select the best iteration
 
@@ -210,18 +214,20 @@ train.data[, c("gender",
 
 
 
+
+
 # handling imbalanced data ----------------------
-
-
 train.rose <- ROSE::ovun.sample(formula = response ~ ., 
                                      data = train.data[, -1], 
                                      method = "under", 
                                      N = min(train.data %>% 
                                                count(response) %>% 
-                                               select(n)) * 2, 
+                # for more than 20% of minority classes in proportion                                  
+                                               select(n)) * 6, 
                                      seed = 1)$data
 
 
+# convert to matrix for xg-boost model -----
 train.rose.matrix <- as.matrix(train.rose)
 
 
@@ -244,12 +250,11 @@ xgb_cv_1 <- xgb.cv(params = param_list,
                  print_every_n = 25)
 
 
-# best iteration 
+# best iteration ----------
 best_iter <- min(xgb_cv_1$evaluation_log[(xgb_cv_1$evaluation_log)$test_auc_mean == max((xgb_cv_1$evaluation_log)$test_auc_mean), ]$iter)
 
 
-# plotting
-
+# plotting ------------
 error_log <- rbind(cbind("type" = rep("train_auc", nrow(xgb_cv_1$evaluation_log)), 
                          xgb_cv_1$evaluation_log[, c("iter", "train_auc_mean")]), 
                    cbind("type" = rep("test_auc", nrow(xgb_cv_1$evaluation_log)), 
@@ -281,7 +286,7 @@ ggsave(filename = "plots/insurance_cross_sell/p_plot_auc.png",
 
 
 
-# create the model based on the CV best iteration number
+# create the model based on the CV best iteration number -----
 xgboost_model_final <- xgboost(data = train.rose.matrix[, -11], 
                          label = as.matrix(train.rose.matrix[, 11], 
                                            drop = FALSE), 
@@ -289,7 +294,7 @@ xgboost_model_final <- xgboost(data = train.rose.matrix[, -11],
                          nrounds = best_iter, 
                          print_every_n = 25)
 
-# observe the model importance
+# observe the model importance ------------
 xgb_model_imp <- xgb.importance(model = xgboost_model_final)
 
 
@@ -315,12 +320,7 @@ ggsave(filename = "plots/insurance_cross_sell/p_feature_importances.png",
 
 
 
-# plot the model importance
-# xgb.plot.importance(importance_matrix = xgb_model_imp)
-
-
-
-# load test data 
+# load test data ------------------
 test.data <- read_csv(file = "data/insurance_cross_sell/test.csv") %>% 
   janitor::clean_names() %>% 
   janitor::remove_empty(which = "rows")
@@ -339,30 +339,31 @@ test.data[, c("gender",
 
 
 
-# use the Xgboost model to make predictions ----
+# use the Xg-boost model to make predictions ----
 set.seed(1234)
 
 pred_xgboost_final <- predict(object = xgboost_model_final, 
                               newdata = as.matrix(test.data)[, -1])
 
-# Max and Min Probabilities 
+# Max and Min Probabilities -------------
 max(pred_xgboost_final)
 min(pred_xgboost_final)
 
-# predicted responses 
-pred_df <- data.frame(response = ifelse(pred_xgboost_final > 0.49, 1, 0))
+# predicted responses --------------------
+pred_df <- data.frame(response = ifelse(pred_xgboost_final > 0.50, 1, 0))
 
-# sample predictions
+# sample predictions -----------
 pred_df %>% head()
 
 
-# distributions 
-pred_df %>% count(response, sort = TRUE)
+# distributions ---------------
+pred_df %>% count(response, 
+                  sort = TRUE)
 
-# combining the whole data with responses 
+# combining the whole data with responses -------
+test_df_wresponse <- cbind(test.data, 
+                           pred_df)
 
-test_df_wresponse <- cbind(test.data, pred_df)
-
-# Response distributions 
+# Response distributions -----------------
 test_df_wresponse %>% 
   count(response, sort = TRUE)
