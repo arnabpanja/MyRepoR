@@ -2,6 +2,25 @@
 My Working Repository for R. It was a great learning experience to be able to 
 configure this repository and connect it to RStudio.
 
+
+------- Contribution on 05th June 2021 -----------------------------------------
+
+Dataset Courtesy :- Kaggle
+Data Set Link :- https://www.kaggle.com/anmolkumar/health-insurance-cross-sell-prediction
+
+
+Health Insurance Cross Sell Predictions have been added today. The script 
+insurance_cross_sell.R uses the Kaggle Data set of Health Insurance Cross 
+Sell and applies the XgBoost Alogorithm to predict whether a customer 
+can be be cross sold a health insurance plan based on a set of predictors. 
+As the response variable is a bit screwed and based on the feedback from the
+Kaggle community the data has been balanced out by under-sampling with the 
+help of the ROSE package and its function ovun.sample. 
+This exercise can be a good tutorial on how to 
+
+1. Use the R XGboost Package
+2. Use the ROSE package for handling imbalanced data sets
+
 ------- Contribution on 22nd May 2021 -----------------------------------------
 
 Mobile Price Classification using Kaggle Data Set and applying the Support 
