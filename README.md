@@ -3,6 +3,19 @@ My Working Repository for R. It was a great learning experience to be able to
 configure this repository and connect it to RStudio.
 
 
+------- Contribution on 13th June 2021 -----------------------------------------
+
+An illustration of Hierarchical Clustering as a method of unsupervised learning 
+is demonstrated with a RMD script hierarchical_clustering.rmd. This is an applied
+exercise of the book ISLR and analyzes the US Arrests data set to perform Hierarchical 
+Clustering. Denfrogram plots are shown for the hierarchical clusters. 
+Some interesting observations can be obtained from this notebook when the clustering
+is done on both a scaled version of the data and the un-scaled version of the data. 
+The plots are also interesting and depicts the variations of both the approach.
+
+Lots of learning to do but so little a lifespan we have !!!
+
+
 ------- Contribution on 05th June 2021 -----------------------------------------
 
 Dataset Courtesy :- Kaggle
