@@ -182,7 +182,7 @@ dim(df.arrests)</code></pre>
 <pre><code>## [1] 50  4</code></pre>
 <pre class="r"><code>names(df.arrests)</code></pre>
 <pre><code>## [1] &quot;Murder&quot;   &quot;Assault&quot;  &quot;UrbanPop&quot; &quot;Rape&quot;</code></pre>
-<p>As we can see the US Arrests data has 50 observations and 4 variables. The observations corespond to each of the 50 states of US. We can have a glimpse of the data by using the head function.</p>
+<p>As we can see the US Arrests data has 50 observations and 4 variables. The observations correspond to each of the 50 states of the US. The data set has 5 variables including the US State. We can get a glimpse of the data by using the head function.</p>
 <pre class="r"><code>head(df.arrests)</code></pre>
 <pre><code>##            Murder Assault UrbanPop Rape
 ## Alabama      13.2     236       58 21.2
@@ -363,7 +363,7 @@ scaled.clust.dist</code></pre>
 ## 1     1   8
 ## 2     2  11
 ## 3     3  31</code></pre>
-<p>The distributions of the clusters have changed and rightly so. This distribution is more reliable as all the original values have been scaled to the same dimension before applying hierarchical clustering algorithm.</p>
+<p>The distributions of the clusters have changed and rightly so. Now 8 observations are in cluster 1, 11 are in cluster 2 and 31 observations are in cluster 3. This distribution is more correct representation of the data as all the variables have been scaled to the same dimension before applying hierarchical clustering algorithm.</p>
 <p>We can plot this distribution and check the results.</p>
 <pre class="r"><code>p_scaled &lt;- ggplot(data = scaled.clust.dist) + 
   geom_segment(mapping = aes(x = 0, 

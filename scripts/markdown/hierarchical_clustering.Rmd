@@ -28,7 +28,7 @@ names(df.arrests)
 
 
 ```
-As we can see the US Arrests data has `r dim(df.arrests)[1]` observations and `r dim(df.arrests)[2]` variables. The observations corespond to each of the 50 states of US. We can have a glimpse of the data by using the head function. 
+As we can see the US Arrests data has `r dim(df.arrests)[1]` observations and `r dim(df.arrests)[2]` variables. The observations correspond to each of the `r dim(df.arrests)[1]` states of the US. The data set has `r length(names(df.arrests)) + 1` variables including the US State. We can get a glimpse of the data by using the head function. 
 
 ```{r data_glimpse}
 
@@ -232,7 +232,8 @@ scaled.clust.dist <-  data.frame(clust = as.factor(unique(df.arrests.scaled$clus
 scaled.clust.dist
 
 ```
-The distributions of the clusters have changed and rightly so. This distribution is more reliable as all the original values have been scaled to the same dimension before applying hierarchical clustering algorithm. 
+The distributions of the clusters have changed and rightly so. 
+Now `r scaled.clust.dist[scaled.clust.dist$clust == 1, 2]` observations are in cluster 1, `r scaled.clust.dist[scaled.clust.dist$clust == 2, 2]` are in cluster 2 and `r scaled.clust.dist[scaled.clust.dist$clust == 3, 2]` observations are in cluster 3. This distribution is more correct representation of the data as all the variables have been scaled to the same dimension before applying hierarchical clustering algorithm. 
 
 We can plot this distribution and check the results. 
 
