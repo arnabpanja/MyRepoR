@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(patchwork))
+library(tidyverse)
+library(patchwork)
 
 ```
 
@@ -19,7 +19,7 @@ the Hierarchical Clustering. Hierarchical Clustering evaluates the observations 
 
 We will the US Arrests data within the Base R to demonstrate the concepets of Hierarchical clustering. 
 
-```{r}
+```{r load_data}
 
 df.arrests <- USArrests
 
@@ -28,9 +28,9 @@ names(df.arrests)
 
 
 ```
-As we can see the US Arrests data has 50 observations on 4 variables. The observations corespond to each of the 50 states of US. We can have a glimpse of the data by using the head function. 
+As we can see the US Arrests data has `r dim(df.arrests)[1]` observations and `r dim(df.arrests)[2]` variables. The observations corespond to each of the 50 states of US. We can have a glimpse of the data by using the head function. 
 
-```{r}
+```{r data_glimpse}
 
 head(df.arrests)
 
@@ -38,7 +38,7 @@ head(df.arrests)
 
 As we can see the row names are the US States. We would better like to convert the row names to a proper data frame column. We perform the below steps to achieve that. 
 
-```{r}
+```{r rearrange_variables}
 
 df.arrests$State <- rownames(df.arrests)
 
@@ -50,11 +50,11 @@ head(df.arrests)
 
 Now the data frame has been converted as desired. 
 
-## Hierarchical Clustering - Unscaled 
+### Hierarchical Clustering - Unscaled 
 
-We will perform hierarchical clustering using the **hclust** function of **Base R** using un-scaled values first and then with scaled values next. 
+We will perform hierarchical clustering using the **hclust** function of **Base R** using un-scaled values first and then with scaled values next. Hierarchical clustering algorithm uses different linkage methods to find the dissimilarity between groups of observations. Here we will use the **Complete** method of linkage. This can be specified as an argument to the hclust function as shown below. 
 
-```{r}
+```{r cluster_create}
 set.seed(1234)
 
 hc.complete <- hclust(d = dist(df.arrests[, -5], 
@@ -64,7 +64,7 @@ hc.complete <- hclust(d = dist(df.arrests[, -5],
 ```
 The hierarchical clustering thus obtained can be visualized using a **Dendrogram** plot. The below figure shows the Dendrogram plot obtained from above. 
 
-```{r}
+```{r plot_dendro}
 
 plot(hc.complete)
 
@@ -75,20 +75,20 @@ As we can see the leaf nodes are each of the 50 observations of the data. They a
 
 Let us now cut the cluster at a level 3 so that all the 50 observations can be divided into one of the 3 clusters. 
 
-```{r}
+```{r cut_tree}
 
 vclust <- cutree(tree = hc.complete, k = 3)
 
-vclust
+matrix(vclust, ncol = 5)
 
 ```
 
-
+For clarity of the data, the clusters created are shown in the matrix form. The first column of the matrix shows the clusters of the first 10 observations, the 2nd column for the observations from 11 to 20 and so on. 
 As we can see each of the 50 observations have been clustered into one of 3 clusters numbered as 1 or a 2 or a 3. 
 
 Let us combine the cluster numbers to the original data frame. 
 
-```{r}
+```{r bind_df}
 unscaled.clust <- cbind(df.arrests, clust = vclust) 
 
 head(unscaled.clust)
@@ -96,9 +96,9 @@ head(unscaled.clust)
 ```
 
 
-We can observe the distribution of clusters using a very simple method. 
+We can observe the distribution of clusters using a very simple method of aggregation. 
 
-```{r}
+```{r group_by_dist}
 
 unscaled.clust.dist <-  data.frame(clust = as.factor(unique(unscaled.clust$clust)), 
            cnt = apply(X = as.matrix(unique(unscaled.clust$clust), drop = FALSE), 
@@ -110,9 +110,11 @@ unscaled.clust.dist
 
 
 ```
+`r unscaled.clust.dist[unscaled.clust.dist$clust == 1, 2]` observations are in cluster 1, `r unscaled.clust.dist[unscaled.clust.dist$clust == 2, 2]` are in cluster 2 and `r unscaled.clust.dist[unscaled.clust.dist$clust == 3, 2]` observations are in cluster 3. 
+
 We can also plot the distribution of 3 clusters into a bar plot as below. 
 
-```{r}
+```{r plot_dist}
 
 p_unscaled <- ggplot(data = unscaled.clust.dist) + 
   geom_segment(mapping = aes(x = 0, 
@@ -135,12 +137,13 @@ p_unscaled <- ggplot(data = unscaled.clust.dist) +
 p_unscaled
 
 ```
-## Hierarchical Clustering - Sccaled 
+
+### Hierarchical Clustering - Scaled 
 
 The variables of the data frame are in a different scale. It is always advisable in such situations to first scale the variables and then perform the hierarchical clustering. 
 So let us scale the variables to a mean of 1.0 and standard deviation of 0. This can be achieved by using the scale function in Base R. 
 
-```{r}
+```{r scale_df}
 
 
 df.arrests.scaled <-  as.data.frame(cbind(apply(X = df.arrests[, 1:4], 
@@ -157,12 +160,20 @@ head(df.arrests.scaled)
 
 The data frame variables are now scaled. Are the values scaled to a mean of 0 and standard deviation of 1? Let us verify this
 
-```{r}
+```{r find_mean}
+
+print("== Mean after scaling ==")
 
 apply(X = df.arrests.scaled[, 1:4], 
       MARGIN = 2, 
       FUN = function(x)  
         round(mean(x),digits = 2))
+
+
+```
+```{r find_sd}
+
+print("== Standard deviation after scaling ==")
 
 apply(X = df.arrests.scaled[, 1:4], 
       MARGIN = 2, 
@@ -170,11 +181,12 @@ apply(X = df.arrests.scaled[, 1:4],
 
 
 ```
+
 The variables have been converted to a mean of 0 and standard deviation of 1. 
 
 We will now apply hierarchical clustering on this scaled variables and plot the dendrogram. 
 
-```{r}
+```{r scaled_clusters}
 set.seed(1234)
 
 hc.scaled <- hclust(d = dist(x = df.arrests.scaled[, -5], 
@@ -185,17 +197,17 @@ plot(hc.scaled)
 ```
 Let us now cut the dendrogram to to classify the scaled observations into 3 clusters. 
 
-```{r}
+```{r cut_scaled_tree}
 
 vscaled <- cutree(tree = hc.scaled, k = 3)
 
-vscaled 
+matrix(vscaled, ncol = 5) 
 
 ```
 we now combine the clusters to the original scaled data frame and observe the results. 
 Also in the process we round the variables to 2 digits for a better and consistent view of the final clustered and scaled data set.  
 
-```{r}
+```{r combine_scaled_df}
 
 df.arrests.scaled <- cbind(df.arrests.scaled, 
                            clust = vscaled)
@@ -209,7 +221,7 @@ head(df.arrests.scaled)
 
 The distribution of the clusters after scaling can be seen as below. 
 
-```{r}
+```{r scaled_dist}
 
 scaled.clust.dist <-  data.frame(clust = as.factor(unique(df.arrests.scaled$clust)), 
            cnt = apply(X = as.matrix(unique(df.arrests.scaled$clust), drop = FALSE), 
@@ -224,7 +236,7 @@ The distributions of the clusters have changed and rightly so. This distribution
 
 We can plot this distribution and check the results. 
 
-```{r}
+```{r plot_scaled_dist}
 
 p_scaled <- ggplot(data = scaled.clust.dist) + 
   geom_segment(mapping = aes(x = 0, 
@@ -251,8 +263,11 @@ p_scaled
 A plot says a thousand words. We can even use the patchwork package to combine the above plots. 
 
 
-```{r}
+```{r combine_plots}
 
 p_unscaled / p_scaled
 
 ```
+This paper has demonstrated the implementation of Hierarchical Clustering on the US Arrests data set contained in Base R. The methods used are inspired from the book **An Introduction to Statistical Learning with Applications in R**. This is one of the exercises in the Applied section of the Chaper on "Unsupervised Learning". 
+
+Hope it is a good read and good tutorial for practicing Data Scientists !!!!
