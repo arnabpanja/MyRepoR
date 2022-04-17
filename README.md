@@ -2,12 +2,14 @@
 My Working Repository for R. It was a great learning experience to be able to 
 configure this repository and connect it to RStudio.
 
-------- Contribution on 17th April 2022 -----------------------------------------
+------- Contribution on 17th April 2022 ----------------------------------------
 
 I have managed to update my R and R Studio Installation after almost a year. 
 Hurrah !!!. 
+I have managed to install all the essential packages as well and I am up and 
+running again with a new version of R and its base pipe operator. 
 
-Hence I updated the Readme ... 
+Hence I updated the Readme as well ...  
 
 ------- Contribution on 13th June 2021 -----------------------------------------
 
