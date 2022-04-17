@@ -8,7 +8,7 @@ configure this repository and connect it to RStudio.
 An illustration of Hierarchical Clustering as a method of unsupervised learning 
 is demonstrated with a RMD script hierarchical_clustering.rmd. This is an applied
 exercise of the book ISLR and analyzes the US Arrests data set to perform Hierarchical 
-Clustering. Dendogram plots are shown for the hierarchical clusters. 
+Clustering. Dendrogram plots are shown for the hierarchical clusters. 
 Some interesting observations can be obtained from this notebook when the clustering
 is done on both a scaled version of the data and the un-scaled version of the data. 
 The plots are also interesting and depicts the variations of both the approach.
