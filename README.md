@@ -2,6 +2,14 @@
 My Working Repository for R. It was a great learning experience to be able to 
 configure this repository and connect it to RStudio.
 
+------- Contribution on 25th April 2022 ----------------------------------------
+
+Tidy Tuesday Week 16 - 1st plot updated. 2nd plot created with time dataframe. 
+Use of tidy text package data frame, tokenization of the word clues and visualize the 
+distribution of the most frequently used words in the clues. 
+
+Good going ... 
+
 ------- Contribution on 17th April 2022 ----------------------------------------
 
 I have managed to update my R and R Studio Installation after almost a year. 
