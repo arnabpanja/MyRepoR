@@ -4,11 +4,12 @@ configure this repository and connect it to RStudio.
 
 ------- Contribution on 25th April 2022 ----------------------------------------
 
-Tidy Tuesday Week 16 - 1st plot updated. 2nd plot created with time dataframe. 
-Use of tidy text package data frame, tokenization of the word clues and visualize the 
-distribution of the most frequently used words in the clues. 
+Tidy Tuesday Week 16 - 1st plot updated. 2nd plot created with time data frame. 
+Use of tidy text package data frame, tokenization of the word clues and visualize the distribution of the most frequently used words in the clues. 
+Also a major learning on how to use word cloud 2 package and how to create
+word clouds using this package. 
 
-Good going ... 
+Good learning ... 
 
 ------- Contribution on 17th April 2022 ----------------------------------------
 

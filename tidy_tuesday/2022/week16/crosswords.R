@@ -6,6 +6,12 @@ library(janitor)
 library(ggthemes)
 library(grid)
 library(tidytext)
+library(stringr)
+library(wordcloud2)
+library(htmlwidgets)
+library(webshot)
+
+# webshot::install_phantomjs()
 
 
 
@@ -17,18 +23,24 @@ n_top <- 8
 # read the data file  --------------
 
 if(!("big_dave" %in% ls())){
-
+  
+  print(" ========= Loading Big Dave data set ========= ")
+  
   big_dave <- readr::read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-04-19/big_dave.csv',
                             col_types = cols()) |>
   janitor::clean_names() |> janitor::remove_empty(which = "rows")
-}
+} else print(" ========= Already loaded !!! Big Dave data set ========= ")
+
 
 if(!("times" %in% ls())){
-
+  
+  print(" ========= Loading Times data set ========= ")
+  
   times <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-04-19/times.csv', 
                          col_types = cols()) |> 
   janitor::clean_names() |> janitor::remove_empty(which = "rows")
-}
+} else print(" ========= Already loaded !!! Times data set ========= ")
+
 
 
 
@@ -108,8 +120,41 @@ ggsave(filename = "tidy_tuesday/2022/week16/crossword_plot.png",
        plot = last_plot())
 
 
+# Generate a word cloud of the clues ---------------------
 
-# highest words as the answers 
+df.big.dave <- big_dave |> filter(!is.na(clue)) |> 
+  select(rowid, clue, answer)
+
+df.big.dave.freq <- cbind(df.big.dave, 
+                          df.big.dave |> 
+                         (\(x) {str_locate(string = x$clue, 
+                                           pattern = '\\([:digit:]')
+                         })()) |> 
+  mutate(new_clue = str_sub(clue, 1, start - 1)) |> 
+  unnest_tokens(output = word, input = new_clue) |> 
+  group_by(word) |> 
+  summarise(count = n()) |> ungroup() |> 
+  filter(!is.na(word)) |> 
+  anti_join(stop_words, by = "word")
+
+
+p_bigdave_wordcloud <- df.big.dave.freq |> select(word, freq = count) |> 
+  wordcloud2::wordcloud2(size = 1.6, color = "random-dark")
+
+
+saveWidget(widget = p_bigdave_wordcloud, 
+           file = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html", 
+           selfcontained = F)
+
+webshot(url = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html", 
+        file = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.png", 
+        delay = 25, 
+        vwidth = 460, 
+        vheight = 460)
+
+
+# times data set analysis -------------------
+# highest words as the answers --------------
 
 times |> filter(!is.na(answer)) |> group_by(answer) |> 
   summarise(count = n()) |> ungroup() |> 
@@ -125,59 +170,66 @@ times |> filter(!is.na(answer)) |> group_by(answer) |>
   
 # clue words distribution of times data ----------------------------
 
-p_clue_plot <- times |> filter(!is.na(clue)) |> 
-  select(rowid, clue, answer) |> 
-cbind(str_locate(subset.times$clue, '\\([:digit:]')) |> 
+df.times <- times |> filter(!is.na(clue)) |> 
+  select(rowid, clue, answer)
+
+df.times.freq <- cbind(df.times, 
+      df.times |> 
+        (\(x) {str_locate(string = x$clue, 
+                          pattern = '\\([:digit:]')
+        })()) |> 
   mutate(new_clue = str_sub(clue, 1, start - 1)) |> 
   unnest_tokens(output = word, input = new_clue) |> 
   group_by(word) |> 
   summarise(count = n()) |> ungroup() |> 
   filter(!is.na(word)) |> 
-  anti_join(stop_words, by = "word") |> 
+  anti_join(stop_words, by = "word")
+
+p_clue_plot <- df.times.freq |> 
   top_n(n = n_top, wt = count) |> 
   ggplot() + 
   geom_col(mapping = aes(x = count, 
                          y = reorder(word, count), 
                          fill = word), 
            show.legend = FALSE) + 
+  geom_curve(mapping = aes(x = 1500, y = 4, xend = 1600, yend = 7.5), 
+             arrow = arrow(length = unit(x = 0.03, units = "npc"), 
+                           type = "closed"), curvature = 0.1,  
+             color = "black", 
+             lwd = 0.75) + 
+  geom_text(mapping = aes(x = 1500, 
+                          y = 3.5, 
+                          label = "The word that appears\nthe most in the clues"), 
+            size = 3.0, 
+            show.legend = FALSE) + 
   scale_x_continuous(expand = c(0.02, 0.02)) + 
   scale_fill_brewer(palette = "Dark2") + 
   labs(x = "Count", 
        y = "Clue Words", 
        title = "Crossword Puzzles and Clues", 
-       subtitle = "Times - Clue Words Distribution", caption = "Tidy Tuesday 2022 - Week 16\nArnab Panja")
+       subtitle = "Times - Clue Words Distribution", 
+       caption = "Tidy Tuesday 2022 - Week 16\nArnab Panja")
 
-# add custom annotations -------------------
-
-my_text_grob <- grid::grobTree(textGrob(label = "The word that appears\nthe most in the clues", 
-                                        x = 0.75, y = 0.3, hjust = 0, 
-                                        gp = gpar(col = "black", 
-                                                  fontface = "bold", 
-                                                  fontsize = 9)))
-
-
-my_arrow_grob <- grid::grobTree(curveGrob(x1 = 0.90, 
-                                          y1 = 0.35, 
-                                          x2 = 0.95, 
-                                          y2 = 0.85, 
-                                          curvature = 0.05, 
-                                          arrow = arrow(angle = 10, 
-                                                        ends = "last", 
-                                                        type = "closed"), 
-                                          gp = gpar(lty = "solid", 
-                                                    col = "black", 
-                                                    fill = "black", 
-                                                    lwd = 1.5)))
-
-p_clue_plot <- p_clue_plot + annotation_custom(grob = my_text_grob) + 
-  annotation_custom(grob = my_arrow_grob)
 
 p_clue_plot
 
 ggsave(filename = "tidy_tuesday/2022/week16/clue_plot.png", 
        plot = last_plot())
 
+# Word cloud plot of the times data set ---------------------
 
+p_times_wordcloud <- df.times.freq |> select(word, freq = count) |> 
+  wordcloud2::wordcloud2(size = 1.6, color = "random-dark")
+
+saveWidget(widget = p_times_wordcloud, 
+           file = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
+           selfcontained = F)
+
+webshot(url = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
+        file = "tidy_tuesday/2022/week16/p_times_wordcloud.png", 
+        delay = 25, 
+        vwidth = 480, 
+        vheight = 480)
 
 
 
