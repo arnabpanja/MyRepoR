@@ -11,6 +11,7 @@ library(wordcloud2)
 library(htmlwidgets)
 library(webshot)
 
+# run this command as a one time install of phantom js ------
 # webshot::install_phantomjs()
 
 
