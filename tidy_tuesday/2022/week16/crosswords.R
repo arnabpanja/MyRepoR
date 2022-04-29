@@ -139,7 +139,7 @@ df.bigdave.trx <- big_dave |> select(rowid, clue, answer) |>
                                               pattern = '\\_', 
                                               replacement = '')))})() |> 
   as_tibble() |> 
-  (\(x){cbind(rowid = x$rowid, 
+  (\(x){cbind(rowid = x$rowid, # to deal with UTF-8 encoding issues
              answer = x$answer, 
              clue = str_replace_all(string = x$clue, 
                                     pattern = '[[:punct:]]', 
@@ -176,7 +176,7 @@ p.bigdave.wordcloud
 
 df.bigdave.clues <- df.bigdave.trx |> select(clue) |> 
   unnest_tokens(output = word, input = clue) |> 
-  (\(x){str_replace_all(string = x$word, 
+  (\(x){str_replace_all(string = x$word, # to deal with UTF-8 encoding issues
                        pattern = '[[:punct:]]', 
                        replacement = '\'')})() |> 
   as_tibble() |> setNames("word") |> 
