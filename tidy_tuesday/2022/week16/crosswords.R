@@ -78,7 +78,7 @@ p.answer.dist <- ggplot(data = df.answer.dist) +
         legend.position = "top", 
         axis.line = element_line(colour = "black")) + 
   labs(title = "Crossword Puzzles and Clues", 
-       subtitle = paste0("Answer Words - Top ", n_top, " - How long & frequent ?"), 
+       subtitle = paste0("Big Dave - Answer Words - Top ", n_top, " - How long & frequent ?"), 
        x = "Number of words", 
        y = "Word Length", 
        caption = "Tidy Tuesday 2022 - Week 16\nArnab Panja")
@@ -138,7 +138,14 @@ df.bigdave.trx <- big_dave |> select(rowid, clue, answer) |>
               clue = str_trim(str_replace_all(string = x$clue, 
                                               pattern = '\\_', 
                                               replacement = '')))})() |> 
+  as_tibble() |> 
+  (\(x){cbind(rowid = x$rowid, 
+             answer = x$answer, 
+             clue = str_replace_all(string = x$clue, 
+                                    pattern = '[[:punct:]]', 
+                                    replacement = '\''))})() |> 
   as_tibble()
+
 
 
 
@@ -149,12 +156,14 @@ p.bigdave.wordcloud <- df.bigdave.trx |> select(clue) |>
   summarise(count = n(), .groups = "drop") |> ungroup() |> 
   filter(count > 100) |> 
   select(word, freq = count) |> 
-  wordcloud2::wordcloud2(size = 0.8, color = "random-dark")
+  wordcloud2::wordcloud2(size = 0.8, 
+                         color = "random-dark")
 
 
 saveWidget(widget = p.bigdave.wordcloud, 
            file = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html", 
-           selfcontained = F)
+           selfcontained = F, 
+           title = "Wordcloud - Big Dave - Clues")
 
 webshot(url = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html", 
         file = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.png", 
@@ -165,20 +174,22 @@ webshot(url = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html",
 p.bigdave.wordcloud
 
 
-df.bigdave.trx |> select(clue) |> 
-  unnest_tokens(output = word, input = clue) |> 
-  anti_join(stop_words, by = "word") |> 
-  filter(word == "it's")
-
-
 df.bigdave.clues <- df.bigdave.trx |> select(clue) |> 
   unnest_tokens(output = word, input = clue) |> 
+  (\(x){str_replace_all(string = x$word, 
+                       pattern = '[[:punct:]]', 
+                       replacement = '\'')})() |> 
+  as_tibble() |> setNames("word") |> 
   anti_join(stop_words, by = "word") |> 
   group_by(word) |> 
   summarise(count = n()) |> ungroup() |>
-  top_n(n = n_top, 
+  top_n(n = n_top + 2, 
         wt = count) |> 
   mutate(type = "Clues")
+
+
+
+# -------------------
 
   
 df.bigdave.answers <- df.bigdave.trx |> select(answer) |> 
@@ -186,7 +197,7 @@ df.bigdave.answers <- df.bigdave.trx |> select(answer) |>
   anti_join(stop_words, by = "word") |> 
   group_by(word) |> 
   summarise(count = n(), .groups = "drop") |> ungroup() |> 
-  top_n(n = n_top, 
+  top_n(n = n_top + 2, 
         wt = count) |> 
   mutate(type = "Answers")
 
@@ -251,7 +262,8 @@ p.times.wordcloud <- df.times.trx |> select(clue) |>
 
 saveWidget(widget = p.times.wordcloud, 
            file = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
-           selfcontained = F)
+           selfcontained = F, 
+           title = "Wordcloud - Times - Clues")
 
 webshot(url = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
         file = "tidy_tuesday/2022/week16/p_times_wordcloud.png", 
@@ -269,7 +281,7 @@ df.times.clues <- df.times.trx |> select(clue) |>
   anti_join(stop_words, by = "word") |> 
   group_by(word) |> 
   summarise(count = n(), .groups = "drop") |> ungroup() |> 
-  top_n(n = n_top, 
+  top_n(n = n_top + 2, 
         wt = count) |> 
   mutate(type = "Clues")
 
@@ -278,7 +290,7 @@ df.times.answers <- df.times.trx |> select(answer) |>
   anti_join(stop_words, by = "word") |> 
   group_by(word) |> 
   summarise(count = n(), .groups = "drop") |> ungroup() |> 
-  top_n(n = n_top, 
+  top_n(n = n_top + 2, 
         wt = count) |> 
   mutate(type = "Answers")
 
