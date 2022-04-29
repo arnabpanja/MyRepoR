@@ -2,6 +2,15 @@
 My Working Repository for R. It was a great learning experience to be able to 
 configure this repository and connect it to RStudio.
 
+
+------- Contribution on 29th April 2022 ----------------------------------------
+
+What are anonymous functions and how can they can be used inline in piping 
+to construct and add inline transformations ... 
+All of it can be found in crosswords.R
+
+Happy Learning !!!!
+
 ------- Contribution on 25th April 2022 ----------------------------------------
 
 Tidy Tuesday Week 16 - 1st plot updated. 2nd plot created with time data frame. 
