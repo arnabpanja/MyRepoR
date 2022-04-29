@@ -12,7 +12,6 @@ library(webshot)
 # webshot::install_phantomjs()
 
 
-
 # set a variable to store the top N value to be used later -------
 n_top <- 8
 
@@ -120,35 +119,37 @@ ggsave(filename = "tidy_tuesday/2022/week16/crossword_plot.png",
 
 # Generate a word cloud of the clues ---------------------
 
-df.big.dave <- big_dave |> filter(!is.na(clue)) |> 
-  select(rowid, clue, answer)
+df.bigdave.trx <- big_dave |> select(rowid, clue, answer) |> 
+  filter(!is.na(clue) & !is.na(answer)) |> 
+  mutate(answer = str_to_lower(answer), 
+         clue = str_to_lower(clue)) |> 
+  (\(x){cbind(x, str_locate(string = x$clue, pattern = '\\([:digit:]'))})() |> 
+  mutate(new_clue = if_else(is.na(start), 
+                            str_trim(clue), 
+                            str_trim(str_sub(clue, 1, start - 1)))) |> 
+  select(rowid, clue = new_clue, answer) |> 
+  (\(x){cbind(rowid = as.numeric(x$rowid), 
+              answer = x$answer, clue = str_trim(str_replace_all(string = x$clue, 
+                                                                 pattern = '[:digit:]', 
+                                                                 replacement = '')))})() |> 
+  as_tibble() |> 
+  (\(x){cbind(rowid = x$rowid, 
+              answer = x$answer, 
+              clue = str_trim(str_replace_all(string = x$clue, 
+                                              pattern = '\\_', 
+                                              replacement = '')))})() |> 
+  as_tibble()
 
-df.big.dave.freq <- cbind(df.big.dave, 
-                          df.big.dave |> 
-                         (\(x) {str_locate(string = x$clue, 
-                                           pattern = '\\([:digit:]')
-                         })()) |> 
-  mutate(new_clue = str_sub(clue, 1, start - 1)) |> 
-  unnest_tokens(output = word, input = new_clue) |> 
+
+
+p.bigdave.wordcloud <- df.bigdave.trx |> select(clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(stop_words, by = "word") |> 
   group_by(word) |> 
-  summarise(count = n()) |> ungroup() |> 
-  filter(!is.na(word)) |> 
-  anti_join(stop_words, 
-            by = "word") |> 
-  (\(x){cbind(x, 
-        str_locate(string = x$word, 
-                   pattern = '^[:digit:]'))})() |> 
-  select(word, count, start) |> 
-  filter(is.na(start)) |> select(word, count) |> 
-  (\(x){cbind(x, str_locate(string = x$word, 
-                            pattern = '\\_'))})() |> 
-  filter(is.na(start)) |> 
-  select(word, count) |> filter(count > 100)
-
-
-p.bigdave.wordcloud <- df.big.dave.freq |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  filter(count > 100) |> 
   select(word, freq = count) |> 
-  wordcloud2::wordcloud2(size = 1.6, color = "random-dark")
+  wordcloud2::wordcloud2(size = 0.8, color = "random-dark")
 
 
 saveWidget(widget = p.bigdave.wordcloud, 
@@ -158,88 +159,95 @@ saveWidget(widget = p.bigdave.wordcloud,
 webshot(url = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.html", 
         file = "tidy_tuesday/2022/week16/p_bigdave_wordcloud.png", 
         delay = 25, 
-        vwidth = 480, 
-        vheight = 480)
+        vwidth = 1000, 
+        vheight = 1000)
 
+p.bigdave.wordcloud
+
+
+df.bigdave.trx |> select(clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(stop_words, by = "word") |> 
+  filter(word == "it's")
+
+
+df.bigdave.clues <- df.bigdave.trx |> select(clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(stop_words, by = "word") |> 
+  group_by(word) |> 
+  summarise(count = n()) |> ungroup() |>
+  top_n(n = n_top, 
+        wt = count) |> 
+  mutate(type = "Clues")
+
+  
+df.bigdave.answers <- df.bigdave.trx |> select(answer) |> 
+  unnest_tokens(output = word, input = answer) |> 
+  anti_join(stop_words, by = "word") |> 
+  group_by(word) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  top_n(n = n_top, 
+        wt = count) |> 
+  mutate(type = "Answers")
+
+
+p.bigdave.answers.clues <- rbind(df.bigdave.clues, df.bigdave.answers) |> 
+  ggplot() + 
+  geom_col(mapping = aes(x = count, y = reorder_within(x = word, 
+                                                       by = count, 
+                                                       within = type), fill = word), 
+           show.legend = FALSE, width = 0.8) + 
+  scale_y_reordered() +
+  facet_wrap(facets = ~type, ncol = 2, scales = "free") + 
+  labs(x = NULL, 
+       y = NULL, 
+       title = "Crossword - Big Dave", 
+       subtitle = "Most frequent - Answers & Clues", 
+       caption = "Tidy Tuesday - Week 16- Arnab Panja")
+
+ggsave(filename = 'tidy_tuesday/2022/week16/p_bigdave_answers_clues.png', 
+       plot = p.bigdave.answers.clues)
+
+
+p.bigdave.answers.clues
 
 # times data set analysis -------------------
-# highest words as the answers --------------
 
-times |> filter(!is.na(answer)) |> group_by(answer) |> 
-  summarise(count = n()) |> ungroup() |> 
-  top_n(n = 8, wt = count)
-
-
-# lowest words as the answers   
-
-times |> filter(!is.na(answer)) |> group_by(answer) |> 
-  summarise(count = n()) |> ungroup() |> 
-  arrange(count) |> mutate(row_n = row_number()) |> 
-  filter(row_n <= 4)
-  
 # clue words distribution of times data ----------------------------
 
-df.times <- times |> filter(!is.na(clue)) |> 
-  select(rowid, clue, answer)
-
-df.times.freq <- cbind(df.times, 
-      df.times |> 
-        (\(x) {str_locate(string = x$clue, 
-                          pattern = '\\([:digit:]')
-        })()) |> 
-  mutate(new_clue = str_sub(clue, 1, start - 1)) |> 
-  unnest_tokens(output = word, input = new_clue) |> 
-  group_by(word) |> 
-  summarise(count = n()) |> ungroup() |> 
-  filter(!is.na(word)) |> 
-  anti_join(stop_words, by = "word") |> 
-  (\(x){cbind(x, 
-              str_locate(string = x$word, 
-                         pattern = '^[:digit:]'))})() |> 
-  select(word, count, start) |> 
-  filter(is.na(start)) |> select(word, count) |> 
-  (\(x){cbind(x, str_locate(string = x$word, 
-                            pattern = '\\_'))})() |> 
-  filter(is.na(start)) |> 
-  select(word, count) |> filter(count > 100)
-
-
-
-p.times.clue <- df.times.freq |> 
-  top_n(n = n_top, wt = count) |> 
-  ggplot() + 
-  geom_col(mapping = aes(x = count, 
-                         y = reorder(word, count), 
-                         fill = word), 
-           show.legend = FALSE) + 
-  geom_curve(mapping = aes(x = 1500, y = 4, xend = 1600, yend = 7.5), 
-             arrow = arrow(length = unit(x = 0.03, units = "npc"), 
-                           type = "closed"), curvature = 0.1,  
-             color = "black", 
-             lwd = 0.75) + 
-  geom_text(mapping = aes(x = 1500, 
-                          y = 3.5, 
-                          label = "The word that appears\nthe most in the clues"), 
-            size = 3.0, 
-            show.legend = FALSE) + 
-  scale_x_continuous(expand = c(0.02, 0.02)) + 
-  scale_fill_brewer(palette = "Dark2") + 
-  labs(x = "Count", 
-       y = "Clue Words", 
-       title = "Crossword Puzzles and Clues", 
-       subtitle = "Times - Clue Words Distribution", 
-       caption = "Tidy Tuesday 2022 - Week 16\nArnab Panja")
-
-
-p.times.clue
-
-ggsave(filename = "tidy_tuesday/2022/week16/clue_plot.png", 
-       plot = last_plot())
+df.times.trx <- times |> select(rowid, clue, answer) |> 
+  filter(!is.na(clue) & !is.na(answer)) |> 
+  mutate(answer = str_to_lower(answer), 
+         clue = str_to_lower(clue)) |> 
+  (\(x){cbind(x, str_locate(string = x$clue, pattern = '\\([:digit:]'))})() |> 
+  mutate(new_clue = if_else(is.na(start), 
+                            str_trim(clue), 
+                            str_trim(str_sub(clue, 1, start - 1)))) |> 
+  select(rowid, clue = new_clue, answer) |> 
+  (\(x){cbind(rowid = as.numeric(x$rowid), 
+              answer = x$answer, clue = str_trim(str_replace_all(string = x$clue, 
+                                                                 pattern = '[:digit:]', 
+                                                                 replacement = '')))})() |> 
+  as_tibble() |> 
+  (\(x){cbind(rowid = x$rowid, 
+              answer = x$answer, 
+              clue = str_trim(str_replace_all(string = x$clue, 
+                                              pattern = '\\_', 
+                                              replacement = '')))})() |> 
+  as_tibble()
 
 # Word cloud plot of the times data set ---------------------
 
-p.times.wordcloud <- df.times.freq |> select(word, freq = count) |> 
-  wordcloud2::wordcloud2(size = 1.6, color = "random-dark")
+p.times.wordcloud <- df.times.trx |> select(clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(stop_words, by = "word") |> 
+  group_by(word) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  filter(count > 100) |> 
+  select(word, freq = count) |> 
+  wordcloud2::wordcloud2(size = 0.8, 
+                         color = "random-dark")
+
 
 saveWidget(widget = p.times.wordcloud, 
            file = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
@@ -248,8 +256,49 @@ saveWidget(widget = p.times.wordcloud,
 webshot(url = "tidy_tuesday/2022/week16/p_times_wordcloud.html", 
         file = "tidy_tuesday/2022/week16/p_times_wordcloud.png", 
         delay = 25, 
-        vwidth = 480, 
-        vheight = 480)
+        vwidth = 1200, 
+        vheight = 1200)
 
 
+p.times.wordcloud
 
+# Times Data Set Facet plot of most frequent answers and clues ------------------
+
+df.times.clues <- df.times.trx |> select(clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(stop_words, by = "word") |> 
+  group_by(word) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  top_n(n = n_top, 
+        wt = count) |> 
+  mutate(type = "Clues")
+
+df.times.answers <- df.times.trx |> select(answer) |> 
+  unnest_tokens(output = word, input = answer) |> 
+  anti_join(stop_words, by = "word") |> 
+  group_by(word) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  top_n(n = n_top, 
+        wt = count) |> 
+  mutate(type = "Answers")
+
+
+p.times.answers.clues <- rbind(df.times.clues, df.times.answers) |> 
+  ggplot() + 
+  geom_col(mapping = aes(x = count, y = reorder_within(x = word, 
+                                                       by = count, 
+                                                       within = type), fill = word), 
+           show.legend = FALSE, width = 0.8) + 
+  scale_y_reordered() +
+  facet_wrap(facets = ~type, ncol = 2, scales = "free") + 
+  labs(x = NULL, 
+       y = NULL, 
+       title = "Crossword - Times", 
+       subtitle = "Most frequent - Answers & Clues", 
+       caption = "Tidy Tuesday - Week 16- Arnab Panja")
+
+ggsave(filename = 'tidy_tuesday/2022/week16/p_times_answers_clues.png', 
+       plot = p.times.answers.clues)
+
+
+p.times.answers.clues

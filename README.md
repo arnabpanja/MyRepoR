@@ -9,6 +9,9 @@ What are anonymous functions and how can they can be used inline in piping
 to construct and add inline transformations ... 
 All of it can be found in crosswords.R
 
+Some old plots removed and combined into a faceted plot of answers and clues
+for both Big Dave and Times data set. 
+
 Happy Learning !!!!
 
 ------- Contribution on 25th April 2022 ----------------------------------------
