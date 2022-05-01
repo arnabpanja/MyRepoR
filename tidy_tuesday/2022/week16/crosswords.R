@@ -314,3 +314,80 @@ ggsave(filename = 'tidy_tuesday/2022/week16/p_times_answers_clues.png',
 
 
 p.times.answers.clues
+
+
+# how to combine the answer clues plot using facet grid ------
+
+
+
+df.bigdave.all <- cbind(rbind(df.bigdave.clues, df.bigdave.answers), 
+                        dataset = "Big Dave")
+
+df.times.all <- cbind(rbind(df.times.clues, df.times.answers), 
+                      dataset = "Times")
+
+df.dataset.all <- rbind(df.bigdave.all, df.times.all)
+
+p.answers.clues.all <- ggplot(data = df.dataset.all) + 
+  geom_col(mapping = aes(x = count, y = word, 
+                         fill = word), show.legend = FALSE, width = 0.6) + 
+  scale_y_reordered() +
+  facet_grid(dataset~type, scales = "free") + 
+  theme_fivethirtyeight() + 
+  theme(plot.title = element_text(face = "bold", 
+                                  colour = "darkmagenta"), 
+        plot.subtitle = element_text(face = "bold", 
+                                     colour = "darkorchid1", size = 10), 
+        strip.text = element_text(face = "bold", 
+                                  colour = "mediumpurple4")) + 
+  labs(title = "Crossword Puzzles - Answers & Clues", 
+       subtitle = "What are the \"Most Frequent\" 10 words used in the Answers & Clues  ?? ", 
+       caption = "Tidy Tuesday - Week 16\nArnab Panja")
+
+p.answers.clues.all
+
+ggsave(filename = 'tidy_tuesday/2022/week16/p_times_answers_clues.png', 
+       plot = p.answers.clues.all)
+
+# Big Dave - What are the words that have appeared in both answers & clues ------
+
+df.bigdave.trx.clues <- df.bigdave.trx |> select(rowid, clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(y = stop_words, by = "word")
+  
+df.bigdave.trx.answers <- df.bigdave.trx |> 
+                          select(rowid, answer) 
+  
+df.bigdave.commons <- cbind(inner_join(x = df.bigdave.trx.answers, 
+                                       y = df.bigdave.trx.clues, 
+                                       by = c("rowid" = "rowid", 
+                                              "answer" = "word"), 
+                                       keep = TRUE)) |>  
+      select(rowid = rowid.x, answer, word) |> 
+      inner_join(y = df.bigdave.trx, by = "rowid", keep = TRUE) |> 
+      select(rowid = rowid.x, answer = answer.x, clue) |> 
+      mutate(dataset = "Big Dave")
+
+# Times - What are the words that have appeared in both answers & clues ------
+
+df.times.trx.clues <- df.times.trx |> select(rowid, clue) |> 
+  unnest_tokens(output = word, input = clue) |> 
+  anti_join(y = stop_words, by = "word")
+
+df.times.trx.answers <- df.times.trx |> 
+  select(rowid, answer) 
+
+
+df.times.commons <- inner_join(x = df.times.trx.answers, 
+                               y = df.times.trx.clues, 
+                               by = c("rowid" = "rowid", 
+                                      "answer" = "word"), keep = TRUE) |> 
+                    select(rowid = rowid.x, answer, word) |> 
+                    inner_join(y = df.times.trx, by = "rowid", keep = TRUE) |> 
+                    select(rowid = rowid.x, answer = answer.x, clue) |> 
+                    mutate(dataset = "Times")
+
+# So what are these rare commons in answers and clues ------ 
+
+rbind(df.bigdave.commons, 
+      df.times.commons)
