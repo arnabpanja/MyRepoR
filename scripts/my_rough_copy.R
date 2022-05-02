@@ -52,5 +52,18 @@ cbind(df.new, prop.positive = apply(X = df.new,
 
 
 
+# R for data science slack question 3 ---- 
+# across function .names argument not giving the column names as expected
+
+suppressPackageStartupMessages(library(dplyr))
 
 
+df.x <- data.frame(a = sample(1:5, 5), 
+                     b = sample(5:9, 5), 
+                     c = sample(15:19, 5))
+
+df.x
+
+df.x |> mutate(across(where(is.numeric), 
+                      .fns = scale, 
+                      .names = "normed_{.col}"))

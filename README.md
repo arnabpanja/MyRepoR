@@ -3,6 +3,11 @@ My Working Repository for R. It was a great learning experience to be able to
 configure this repository and connect it to RStudio.
 
 
+------- Contribution on 02nd May 2022 -----------------------------------------
+
+Answered a few R4DS Slack questions .... 
+
+
 ------- Contribution on 29th April 2022 ----------------------------------------
 
 What are anonymous functions and how can they can be used inline in piping 
