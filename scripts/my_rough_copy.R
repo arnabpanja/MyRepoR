@@ -1,4 +1,4 @@
-# R for Data Science Slack Question -------
+# R for Data Science Slack Question 1 -------
 # How to replace NA in a matrix/data frame ---- 
 # with a set of pre-defined row and column indices -----
 
@@ -30,6 +30,26 @@ invisible(apply(X = na.indices,
 
 # modified data frame ----
 df.new 
+
+
+
+# R for data science slack question 2---- 
+# to find the proportion of positive columns in a data frame 
+
+
+df.new <- data.frame(case = 1:10, 
+                     a = c(seq(-5, 3, 1), NA), 
+                     b = c(NA, seq(10, -6, -2)), 
+                     c = c(1:5, NA, 6:9))
+
+df.new 
+
+cbind(df.new, prop.positive = apply(X = df.new, 
+                                    MARGIN = 1, FUN = function(x) round(sum(x[-1] >= 0, 
+                                                                            na.rm = TRUE)/length(na.omit(x[-1])), 
+                                                      digits = 1)))
+
+
 
 
 
