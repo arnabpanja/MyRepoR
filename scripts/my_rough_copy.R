@@ -55,15 +55,59 @@ cbind(df.new, prop.positive = apply(X = df.new,
 # R for data science slack question 3 ---- 
 # across function .names argument not giving the column names as expected
 
-suppressPackageStartupMessages(library(dplyr))
-
-
 df.x <- data.frame(a = sample(1:5, 5), 
                      b = sample(5:9, 5), 
                      c = sample(15:19, 5))
 
 df.x
 
-df.x |> mutate(across(where(is.numeric), 
-                      .fns = scale, 
+df.x |> transmute(across(where(is.numeric), 
+                      .fns = scale,     
                       .names = "normed_{.col}"))
+
+
+
+# R for Data Science slack question 4 ------
+
+# Step 1: the original data frame 
+df.x <- data.frame(a = c("F", "10", "A", "13", "21"), 
+                   b = c(NA, "h", NA, "r", "d"), 
+                   c = c(NA, "c", NA, "d", "h"))
+
+
+# Step 2: filter out the main rows from the data frame 
+df.main <- df.x  |> na.omit() |> 
+  (\(x){cbind(row.ind = as.numeric(rownames(x)), x)})()
+
+df.main
+
+
+# Step 3: filter out the look up rows (NA) from the data frame
+df.lkp <- df.x[rowSums((is.na(df.x[, -1]))) == ncol(df.x[, -1]), ] |> 
+  (\(x){cbind(row.ind = as.numeric(rownames(x)), x)})()
+
+df.lkp
+
+
+# Step 4: bind the look up row indices for every main row
+df.main.with.lkpind <- cbind( 
+                            df.main, 
+                            lkp.ind = apply(X = as.data.frame(as.numeric(df.main[, 1])), 
+                                            MARGIN = 1, 
+                                            FUN = function(x) as.numeric(df.lkp[, 1])[max(which((as.numeric(df.lkp[, 1]) < x)))])
+                               )
+df.main.with.lkpind
+
+# Step 5: join the look up data frame using look up indices and extract 1st col
+merge(
+     x = df.main.with.lkpind, 
+     y = df.lkp, 
+     by.x = "lkp.ind", 
+     by.y = "row.ind") |> 
+  (\(x){cbind(as.data.frame(x$a.y), x[, 3:5])})() |> 
+  setNames(paste0("V",1:ncol(df.main)))
+
+
+
+
+
