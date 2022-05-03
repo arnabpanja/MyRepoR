@@ -68,6 +68,7 @@ df.x |> transmute(across(where(is.numeric),
 
 
 # R for Data Science slack question 4 ------
+# A question on look ups using data frames 
 
 # Step 1: the original data frame 
 df.x <- data.frame(a = c("F", "10", "A", "13", "21"), 
@@ -111,3 +112,26 @@ merge(
      by.y = "row.ind") |> 
   (\(x){cbind(as.data.frame(x$a.y), x[, 3:(3+(ncol(df.x)-1))])})() |> 
   setNames(paste0("V",1:ncol(df.main)))
+
+
+
+# R for Data Science slack question 5 ------
+# A question on truncating a multiplication result to 3 decimal places
+
+fn.trunc <- function(x, y){
+  
+  # store the result as a string 
+  z <- as.character(format((x*y*1000)/1000, scientific = FALSE))
+  
+  # extract upto 3 decimal points and convert back to number
+  if(any(strsplit(z, "")[[1]] == ".")){
+    return(as.numeric(substr(z, 1, which(strsplit(z, "")[[1]] == ".") + 3)))
+  } else return(as.numeric(z))
+  
+}
+
+fn.trunc(1.128, 1.7)
+fn.trunc(1.001, 1)
+fn.trunc(1.099, 1.01)
+
+
