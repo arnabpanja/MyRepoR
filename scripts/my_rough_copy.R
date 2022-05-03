@@ -75,18 +75,23 @@ df.x <- data.frame(a = c("F", "10", "A", "13", "21"),
                    c = c(NA, "c", NA, "d", "h"))
 
 
-# Step 2: filter out the main rows from the data frame 
-df.main <- df.x  |> na.omit() |> 
-  (\(x){cbind(row.ind = as.numeric(rownames(x)), x)})()
-
-df.main
-
+df.x
 
 # Step 3: filter out the look up rows (NA) from the data frame
 df.lkp <- df.x[rowSums((is.na(df.x[, -1]))) == ncol(df.x[, -1]), ] |> 
   (\(x){cbind(row.ind = as.numeric(rownames(x)), x)})()
 
 df.lkp
+
+
+
+# Step 3: select the rest of the rows as the main rows
+df.main <- df.x[-df.lkp$row.ind, ] |> 
+  (\(x){cbind(row.ind = as.numeric(rownames(x)), x)})()
+
+df.main
+
+
 
 
 # Step 4: bind the look up row indices for every main row
@@ -104,10 +109,5 @@ merge(
      y = df.lkp, 
      by.x = "lkp.ind", 
      by.y = "row.ind") |> 
-  (\(x){cbind(as.data.frame(x$a.y), x[, 3:5])})() |> 
+  (\(x){cbind(as.data.frame(x$a.y), x[, 3:(3+(ncol(df.x)-1))])})() |> 
   setNames(paste0("V",1:ncol(df.main)))
-
-
-
-
-
