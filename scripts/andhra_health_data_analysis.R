@@ -81,34 +81,3 @@ p_age_distribution_sex
 
 ggsave(filename = "plots/andhra_health_insurance/p_age_distribution_sex.png", 
        plot = p_age_distribution_sex)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
