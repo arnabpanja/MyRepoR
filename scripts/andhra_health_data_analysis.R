@@ -229,7 +229,3 @@ p_claim_amt_surgery
 
 ggsave(filename = "plots/andhra_health_insurance/p_claim_amt_surgery.png", 
        plot = p_claim_amt_surgery)
-
-
-
-
