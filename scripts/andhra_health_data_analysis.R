@@ -190,6 +190,8 @@ p_age_mortality_sex <- andhra_health_data |> select(new_sex, mortality_y_n, age)
        y = "Mortality", 
        title = "Health Claims - Mortatlity Distribution with Age & Sex")
 
+p_age_mortality_sex
+
 ggsave(filename = "plots/andhra_health_insurance/p_age_mortality_sex.png", 
        plot = p_age_mortality_sex)
 
