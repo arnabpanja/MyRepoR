@@ -201,10 +201,11 @@ ggsave(filename = "plots/andhra_health_insurance/p_age_mortality_sex.png",
 # to show minimum and maximum claim amounts per surgery category 
 
 
-p_claim_amt_surgery <- andhra_health_data |> select(category_name, claim_amount) |> 
+p_claim_amt_surgery <- suppressMessages(andhra_health_data |> select(category_name, claim_amount) |> 
   mutate(category_name = str_trim(str_replace_all(string = category_name, 
                                          pattern = "SURGERY|AND|SURGERIES|DISEASES|SURGICAL|PROCEDURES", 
-                                         replacement = ""))) |> 
+                                         replacement = ""))) |>
+    filter(!is.na(claim_amount) & claim_amount != 0) |> 
   group_by(category_name) |> 
   summarise(min_claim = min(claim_amount), 
             max_claim = max(claim_amount), .groups = "drop") |>  
@@ -223,7 +224,7 @@ p_claim_amt_surgery <- andhra_health_data |> select(category_name, claim_amount)
   labs(x = "Claim Amounts (in Indian Rupees)", 
        y = NULL,  
        title = "Health Claims - Claims Amounts", 
-       subtitle = "Variation of Claim Amounts by Surgery Category")
+       subtitle = "Variation of Claim Amounts by Surgery Category"))
 
 p_claim_amt_surgery
 
