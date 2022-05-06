@@ -18,7 +18,7 @@ andhra_health_data <- read_csv(file = "data/andhra_health_insurance/Andhra_Healt
 dim(andhra_health_data)
 names(andhra_health_data)
 
-# data clean up ----------------------------
+# Data clean up ----------------------------
 
 
 
@@ -26,7 +26,7 @@ andhra_health_data <- andhra_health_data |> mutate(new_sex = case_when(
   sex == "Male(Child)" ~ "Male", 
   sex == "Female(Child)" ~ "Female", 
   TRUE ~ sex
-)) |> mutate(new_sex = str_to_lower(new_sex))
+)) |> mutate(new_sex = str_to_title(new_sex))
 
 
 
@@ -81,3 +81,96 @@ p_age_distribution_sex
 
 ggsave(filename = "plots/andhra_health_insurance/p_age_distribution_sex.png", 
        plot = p_age_distribution_sex)
+
+
+
+
+
+
+# Plot Bump Chart -----
+# to show no of surgeries by district every year 
+
+p_surgeries_district <- andhra_health_data |> select(surgery_date, district_name) |> 
+  filter(!is.na(surgery_date) & !is.na(district_name)) |> 
+  mutate(surgery_year = str_sub(surgery_date, 7, 10)) |> 
+  group_by(surgery_year, district_name) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  mutate(surgery_year = as.numeric(surgery_year)) |> 
+  ggplot() + 
+  ggbump::geom_bump(mapping = aes(x = surgery_year, 
+                                  y = count, 
+                                  color = district_name), size = 1) + 
+  geom_point(mapping = aes(x = surgery_year, 
+                           y = count, 
+                           color = district_name), 
+             size = 3) + 
+  theme_minimal() + 
+  labs(color = "District", 
+       x = "Year of Surgery", 
+       y = "Number of Surgeries", 
+       title = "Surgeries by District", 
+       subtitle = "Big bump in Surgeries in some districts")
+
+
+p_surgeries_district
+
+ggsave(filename = "plots/andhra_health_insurance/p_surgeries_district.png", 
+       plot = p_surgeries_district)
+  
+# Let us see the variation in 2 of these districts 
+
+andhra_health_data |> select(surgery_date, district_name) |> 
+  filter(!is.na(surgery_date) & !is.na(district_name)) |> 
+  mutate(surgery_year = str_sub(surgery_date, 7, 10)) |> 
+  group_by(surgery_year, district_name) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  mutate(surgery_year = as.numeric(surgery_year)) |> 
+  filter(district_name == "East Godavari" | district_name == "Chittoor") |> 
+  arrange(district_name, surgery_year)
+
+
+# Plot Stacked Bar Chart -----
+# to show no of surgeries by surgery type and hospital type 
+
+p_surgery_hospital <- andhra_health_data |> group_by(category_name, hosp_type) |> 
+  summarise(count = n(), .groups = "drop") |> ungroup() |> 
+  mutate(category_name = str_replace_all(string = category_name, 
+                                         pattern = "SURGERY|AND|SURGERIES|DISEASES|SURGICAL|PROCEDURES", 
+                                         replacement = ""), 
+         hosp_type = case_when(
+           hosp_type == "C" ~ "C - Private", 
+           hosp_type == "G" ~ "G - Government", 
+           TRUE ~ hosp_type
+         )) |> 
+  ggplot() + 
+  geom_bar(mapping = aes(x = count, 
+                         y = category_name, 
+                         fill = hosp_type), 
+           stat = "identity", 
+           na.rm = TRUE, 
+           position = "stack") + 
+  scale_fill_brewer(palette = "Set2") + 
+  theme_minimal() + 
+  theme(legend.position = "top") + 
+  labs(fill = "Hospital Type", 
+       title = "Surgery by Hospital Type", 
+       y = NULL, 
+       x = "Number of Surgeries")
+
+p_surgery_hospital
+
+ggsave(filename = "plots/andhra_health_insurance/p_surgery_hospital.png", 
+       plot = p_surgery_hospital)
+
+  
+
+
+
+
+
+
+
+
+
+
+
