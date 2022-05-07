@@ -135,3 +135,23 @@ fn.trunc(1.001, 1)
 fn.trunc(1.099, 1.01)
 
 
+# R for Data Science slack question 6 ------
+# combining two data frames by rows using bind_rows 
+
+
+df.x <- data.frame(A = c(3, 2, NA, NA), 
+                   B = c(NA, NA, NA, 2), 
+                   C = c(NA, NA, 2, 3), 
+                   D = 1:4)
+
+df.x
+
+dplyr::bind_rows("df-A/c" = df.x |> dplyr::select(A, C) |> 
+                   setNames(c("V1", "V2")), 
+                 "df-B/D" = df.x |> dplyr::select(B, D) |> 
+                   setNames(c("V1", "V2")), 
+                 .id = "group")
+
+
+
+
