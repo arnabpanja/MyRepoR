@@ -1,0 +1,263 @@
+---
+title: "Tidy Tuesday - Solar/Wind Utilties"
+knit: (function(input_file, encoding){
+        out_dir <- '../../docs';
+        rmarkdown::render(input_file, encoding = encoding, output_file =               file.path(dirname(input_file), out_dir, 'index.html'))   
+      })
+author: "Arnab Panja"
+date: "`r format(Sys.Date(), '%d %b %Y')`"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(ggbump)
+library(patchwork)
+library(ggtext)
+```
+
+## 1. Introduction 
+
+This paper will mainly involve is showing us a few ways to create charts and annotate texts to make the charts aesthetically beautiful. Along its way it will also discuss data wrangling techniques avaialable in **R**. So let us first load the data. 
+
+```{r load_data,include=FALSE,echo=FALSE}
+
+df_capacity <- read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/capacity.csv', col_types = cols()) |> 
+  clean_names() |> remove_empty(which = "rows")
+
+df_average_cost <- read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/average_cost.csv', col_types = cols()) |> 
+  clean_names() |> remove_empty(which = "rows")
+
+
+```
+
+The capacity data has the below summary information. It has `r dim(df_capacity)[1]` observations and `r dim(df_capacity)[2]` variables.  
+
+```{r sum_info_capacity, include=TRUE,echo=TRUE}
+
+summary(df_capacity)
+
+```
+
+The average cost data has the below summary information. It has `r dim(df_average_cost)[1]` observations and `r dim(df_average_cost)[2]` variables. 
+
+```{r sum_info_avgcost, include=TRUE, echo=TRUE}
+
+summary(df_average_cost)
+
+```
+
+## 2. Power Capacity - Variation by Year 
+
+
+We will now study how the capacity has varied over the years for each of the power sources using the df_capacity data frame loaded above. 
+
+So let us now get on with some data wrangling the **Tidyverse** way !!! We will also see the use **{patchwork}**, **{ggtext}** packages and also the wonderful plotting facilities of **{ggplot2}** package. Also the power of data wrangling using the **{dplyr}** and **{stringr}** package will also be exhibited through the data visualizations. 
+
+```{r data_trx_power, include=TRUE, echo=TRUE}
+
+df_standalone <- df_capacity |> select(type, 
+                                       year, 
+                                       standalone_prior, 
+                                       standalone_new) |> 
+  mutate(standalone_total = round(standalone_new + standalone_prior, 
+                                  digits = 2)) |> 
+  arrange(type, year) |> select(year, 
+                                type, 
+                                total = standalone_total) |>   
+  mutate(gentype = "Standalone") |> 
+  group_by(year, type, gentype) |> 
+  summarise(total = sum(total), .groups = "drop") |>   
+  ungroup()
+
+
+df_hybrid <- df_capacity |> select(type, 
+                                   year, 
+                                   hybrid_new, 
+                                   hybrid_prior) |>
+  mutate(hybrid_prior = replace_na(hybrid_prior, 0), 
+         hybrid_new = replace_na(hybrid_new, 0)) |> 
+  mutate(hybrid_total = round(hybrid_prior + hybrid_new, digits = 2)) |> 
+  arrange(type, year) |> mutate(total = hybrid_total) |> 
+  select(year, 
+         type, 
+         total) |> 
+  mutate(gentype = "Hybrid") |> 
+  group_by(year, type, gentype) |> 
+  summarise(total = sum(total), 
+            .groups = "drop") |> 
+  ungroup()
+
+```
+
+So we have created two intermediate data frames. What is inside them ? Lets fetch the first 10 observations from each of them. 
+
+```{r view_data_standalone, include=TRUE, echo=TRUE}
+
+df_standalone |> arrange(-year) |> head(10)
+
+```
+
+```{r view_data_hybrid, include=TRUE,echo=TRUE}
+
+df_hybrid |> arrange(-year) |> head(10)
+
+```
+Now let us combine the above two data frames into one which will make this easier to plot the total capacity and its variation by type and year. 
+
+```{r combine_df, include=TRUE, echo=TRUE}
+
+df_total_capacity <- bind_rows(df_standalone, df_hybrid)
+
+df_total_capacity |> arrange(-year, type, gentype) |> head(10)
+
+```
+
+Now having wrangled the data, let us plot the variation of Standalone power capacity over the years 
+
+```{r plot_capacity, include=TRUE, echo=TRUE}
+
+v_colors <- c("orangered3", "dodgerblue3", "lightslateblue", "goldenrod3", 
+              "darkslategrey", "darkslategray3", "olivedrab3")
+
+p_standalone <- filter(df_total_capacity, 
+                       gentype == "Standalone") |> 
+  ggplot(mapping = aes(x = year, 
+                       y = total, 
+                       color = type)) + 
+  geom_bump(size = 1, 
+            show.legend = FALSE) + 
+  geom_point(size = 4, 
+             show.legend = FALSE) + 
+  scale_color_manual(values = v_colors) + 
+  scale_x_continuous(breaks = seq(2014, 2020, 1)) + 
+  scale_y_continuous(breaks = seq(0, 500, 50)) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom") + 
+  labs(x = NULL, 
+       y = "Standalone (GWs)", 
+       title = NULL)
+
+
+
+p_total <- df_total_capacity |> group_by(year, type) |> 
+  summarise(total = sum(total), .groups = "drop") |> ungroup() |> 
+  ggplot(mapping = aes(x = year, 
+                       y = total, 
+                       color = type)) + 
+  geom_bump(size = 1, 
+            show.legend = FALSE) + 
+  geom_point(size = 4, 
+             show.legend = FALSE) + 
+  scale_x_continuous(breaks = seq(2014, 2020, 1)) + 
+  scale_y_continuous(breaks = seq(0, 500, 50)) + 
+  scale_color_manual(values = v_colors) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom") + 
+  labs(x = NULL, 
+       y = "Standalone + Hybrid (Gws)", 
+       title = NULL)
+  
+```
+
+The two plots created above are now combined using the **{patchwork}** package.In addition to the combining the **{ggtext}** package is used to highlight texts using the legend colors.  
+
+```{r plot_combine, include=TRUE, echo=TRUE}
+
+p_patch_plot <- (p_standalone + p_total)  + 
+  plot_annotation(title = "Power Capacity", 
+                  subtitle = "Variation of <span style='color:orangered3;'>**Coal**</span>, <span style='color:dodgerblue3;'>**Gas**</span>, <span style='color:lightslateblue;'>**Nuclear**</span>, <span style='color:darkslategrey;'>**Solar**</span>, <span style='color:goldenrod3;'>**Other**</span>, <span style='color:olivedrab3;'>**Wind**</span>, <span style='color:darkslategray3;'>**Storage**</span> Power by Year") + 
+  plot_layout(guides = "collect") & theme(plot.title = element_text(face = "bold"), plot.subtitle = element_markdown(), plot.background = element_rect(fill = "floralwhite", colour = "floralwhite"))
+
+
+p_patch_plot
+
+```
+
+```{r save_capacity_plot, include=FALSE,echo=FALSE}
+
+ggsave(filename = "../../plots/solar_wind_utilities/p_patch_plot.png", 
+       plot = p_patch_plot)
+
+```
+
+
+**Super !!!** What a **nice combined plot** !!! 
+This is an example of a bump chart prepared using the **{ggbump}** package where a variable can be studied as it progresses by year. Here the variable is Power Capacity.  
+
+Needless to emphasize here is the importance of **{patchwork}** package to combine more than one plots. 
+
+The combined plot shows that Solar Power capacity has increased the most. Wind Power has also increased by a considerable amount i.e. almost doubled within a span of 6 years from 2014 to 2020. Other sources of power barring Storage power has had reduction in capacity. 
+
+Another wonderful feature is the use of markdown elements in subtitle and the color of legends being used as color of texts of the subtitle. This helps us remove the 7 color types in the legend. This makes the final plot neat and much more aesthetically appealing. All of this was made possible by **{ggtext}** package. This package brings the facility of markdown formatting into the plot elements. 
+
+
+
+## 3. Average Cost - Variation by Year 
+
+We will now turn our focus into the study of average cost and its variation by power sources year by year. So let us now work with the average cost data frame
+
+```{r plot_average_cost, include=TRUE, echo=TRUE}
+
+p_avgcost <- df_average_cost |> pivot_longer(cols = ends_with("mwh"), 
+                                names_to = "gentype", 
+                                values_to = "mwh") |> 
+  mutate(gentype = str_replace_all(string = gentype, 
+                                   pattern = "_mwh", 
+                                   replacement = ""), 
+         mwh = round(mwh, digits = 2)) |> 
+  filter(!is.na(mwh)) |> 
+  mutate(year = as.character(year)) |> 
+  ggplot() + 
+  geom_bar(mapping = aes(x = mwh, 
+                         y = year, 
+                         fill = gentype), 
+           stat = "identity", 
+           position = position_dodge(width = 0.9), 
+           show.legend = FALSE) + 
+  geom_text(mapping = aes(x = mwh, 
+                          y = year, 
+                          label = mwh, 
+                          group = gentype), 
+            position = position_dodge(width = 0.9), 
+            size = 2.5, 
+            hjust = 1, 
+            color = "white", 
+            fontface = "bold") + 
+  scale_y_discrete(breaks = seq(2008, 2022, 1)) + 
+  scale_fill_manual(values = c("orangered3", 
+                               "dodgerblue3", 
+                               "chartreuse3")) + 
+  theme_minimal() + 
+  theme(plot.background = element_rect(fill = "floralwhite", 
+                                       color = "floralwhite"), 
+        axis.text.x = element_blank(), 
+        panel.grid.major.y = element_line(size = 0.5, 
+                                          colour = "blue", 
+                                          linetype = "dashed"), 
+        plot.title = element_markdown(face = "bold")) + 
+  labs(fill = "Power Source", x = "Cost in $/Mwh", y = NULL, 
+       title = "Average Cost - Variation of <span style='color:orangered3;'>Gas</span>, <span style='color:dodgerblue3;'>Solar</span>, <span style='color:chartreuse3;'>Wind</span> Power by Year")
+
+p_avgcost
+
+```
+
+
+```{r save_avg_cost_plot,include=FALSE,echo=FALSE}
+
+ggsave(filename = "../../plots/solar_wind_utilities/p_avgcost.png", 
+       plot = p_avgcost)
+
+```
+
+The above stacked bar plot is a classic example of using the **{ggtext}** package to remove the cluttering of legends in a plot. The legends, hence have been removed and the title text has been **color coded** according the colors of the bars. 
+
+The above plot shows cost of power for every source has decreased over the years. This goes hand in hand with the increasing capacity trend as exhibited by the previous plot. 
+
+Hope this notebook has provided a good learning tour of the **_R_** Ecosystem and the benefits it provides for data analysis, data wrangling and data visualization.
+
+
