@@ -21,9 +21,9 @@ library(ggtext)
 
 ## 1. Introduction 
 
-This paper will mainly involve is showing us a few ways to create charts and annotate texts to make the charts aesthetically beautiful. Along its way it will also discuss data wrangling techniques avaialable in **R**. So let us first load the data. 
+This paper will be primarily focused in showing us a few unique ways to create charts and annotate texts to make the charts aesthetically beautiful. Along its way it will also discuss data wrangling techniques available in **R**. So let us first load the data and see its summary characteristics. 
 
-```{r load_data,include=FALSE,echo=FALSE}
+```{r load_data,include=TRUE,echo=FALSE}
 
 df_capacity <- read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/capacity.csv', col_types = cols()) |> 
   clean_names() |> remove_empty(which = "rows")

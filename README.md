@@ -3,21 +3,25 @@ My Working Repository for R. It was a great learning experience to be able to
 configure this repository and connect it to RStudio.
 
 
-------- Contribution on 05th May 2022 -----------------------------------------
+**Contribution on 10th May 2022** 
+
+Tidy Tuesday Week 18 Data Analysis and Plotting - Use of **{ggtext}** 
+
+**Contribution on 05th May 2022** 
 
 Started a new data visualization project on Andhra Pradesh Health Insurance Data
 
-------- Contribution on 03rd May 2022 -----------------------------------------
+**Contribution on 03rd May 2022**
 
 Answered a few R4DS Slack questions .... 
 
 
-------- Contribution on 02nd May 2022 -----------------------------------------
+**Contribution on 02nd May 2022**
 
 Answered a few R4DS Slack questions .... 
 
 
-------- Contribution on 29th April 2022 ----------------------------------------
+**Contribution on 29th April 2022**
 
 What are anonymous functions and how can they can be used inline in piping 
 to construct and add inline transformations ... 
@@ -28,7 +32,7 @@ for both Big Dave and Times data set.
 
 Happy Learning !!!!
 
-------- Contribution on 25th April 2022 ----------------------------------------
+**Contribution on 25th April 2022**
 
 Tidy Tuesday Week 16 - 1st plot updated. 2nd plot created with time data frame. 
 Use of tidy text package data frame, tokenization of the word clues and visualize the distribution of the most frequently used words in the clues. 
@@ -37,7 +41,7 @@ word clouds using this package.
 
 Good learning ... 
 
-------- Contribution on 17th April 2022 ----------------------------------------
+**Contribution on 17th April 2022**
 
 I have managed to update my R and R Studio Installation after almost a year. 
 Hurrah !!!. 
@@ -46,7 +50,7 @@ running again with a new version of R and its base pipe operator.
 
 Hence I updated the Readme as well ...  
 
-------- Contribution on 13th June 2021 -----------------------------------------
+**Contribution on 13th June 2021**
 
 An illustration of Hierarchical Clustering as a method of unsupervised learning 
 is demonstrated with a RMD script hierarchical_clustering.rmd. This is an applied
@@ -59,9 +63,9 @@ The plots are also interesting and depicts the variations of both the approach.
 Lots of learning to do but so little a lifespan we have !!!
 
 
-------- Contribution on 05th June 2021 -----------------------------------------
+**Contribution on 05th June 2021**
 
-Dataset Courtesy :- Kaggle
+Data set Courtesy :- Kaggle
 
 Data Set Link :- https://www.kaggle.com/anmolkumar/health-insurance-cross-sell-prediction
 
@@ -78,7 +82,7 @@ This exercise can be a good tutorial on how to
 1. Use the R XGboost Package
 2. Use the ROSE package for handling imbalanced data sets
 
-------- Contribution on 22nd May 2021 -----------------------------------------
+**Contribution on 22nd May 2021**
 
 Mobile Price Classification using Kaggle Data Set and applying the Support 
 Vector Machines and its different non-linear kernels i.e. Radial, Polynomial, 
