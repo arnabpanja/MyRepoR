@@ -3,6 +3,10 @@ My Working Repository for R. It was a great learning experience to be able to
 configure this repository and connect it to RStudio.
 
 
+**Contribution on 12th May 2022**
+
+My first python script using reticulate 
+
 **Contribution on 10th May 2022** 
 
 Tidy Tuesday Week 18 Data Analysis and Plotting - Use of **{ggtext}** 

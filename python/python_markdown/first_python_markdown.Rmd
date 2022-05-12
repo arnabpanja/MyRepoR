@@ -1,0 +1,137 @@
+---
+title: "My First Python Markdown"
+author: "Arnab Panja"
+date: "`r format(Sys.Date(), '%d %b %Y')`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+```
+
+
+### **My First Markdown in Python**
+
+
+Now let us import the important libraries in python for data manipulation. 
+
+```{python import_libs, include=TRUE, echo=FALSE}
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt 
+import seaborn as sns
+
+
+```
+
+
+Let us create a dict variable in Python and print its output. 
+
+```{python test_dict, include=TRUE, echo=TRUE}
+
+py_dict = {'name' : 'Arnab Panja', 'species' : 'Human'}
+
+
+
+```
+
+Let us create a Python function to determine the average of two numbers and use it. 
+
+
+```{python check_function, include=TRUE, echo=TRUE}
+
+def find_avg(a, b):
+  return (a+b)/2
+
+find_avg(5, 10)
+
+```
+
+
+Now let us use numpy to do some stuff. 
+
+```{python do_stuff_1, include=TRUE,echo=TRUE}
+
+data = np.random.randn(2, 3)
+
+data
+
+
+```
+
+So here we create a **Numpy** object and printed its output. 
+
+```{python do_stuff_2, include=TRUE, echo=FALSE}
+
+data * 10
+
+```
+
+Now let us use **Pandas** and see if it works
+
+```{python check_pandas, include=TRUE, echo=TRUE}
+
+obj = pd.Series([4, 7, 5, -3])
+
+obj
+
+```
+
+#### **A Sample Matplotlib Plot** 
+
+Now let us create a sample plot using **Matplotlib**
+
+```{python mplib_plot, include=TRUE, echo=TRUE}
+
+# create a sample matplotlib plot ----------
+sample_plot1 = plt.plot(np.random.randn(50).cumsum())
+
+
+# show a sample matplotlib plot ----------
+plt.show(sample_plot1)
+
+```
+
+
+#### **A Sample Seaborn Plot** 
+
+Now let us create a sample plot using **Seaborn**
+
+
+```{python seaborn_plot, include=TRUE, echo=TRUE}
+
+# show a sample seaborn plot 
+
+sns.set_theme(style="whitegrid")
+
+# Load the example diamonds data set
+diamonds = sns.load_dataset("diamonds")
+
+# Draw a scatter plot while assigning point colors and sizes to different
+# variables in the data set
+f, ax = plt.subplots(figsize=(8, 8))
+sns.despine(f, left=True, bottom=True)
+clarity_ranking = ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"]
+sample_sns_plot = sns.scatterplot(
+                  x="carat", 
+                  y="price",
+                  hue="clarity", 
+                  size="depth",
+                  palette="ch:r=-.2,d=.3_r",
+                  hue_order=clarity_ranking,
+                  sizes=(1, 8), 
+                  linewidth=0,
+                  data=diamonds, 
+                  ax=ax)
+
+plt.show(sample_sns_plot)
+
+```
+
+So we have been able to do a lot of **_Python_** stuff from **_R_** using Rstudio and its reticulate library. 
+
+Thanks for reading through this. 
