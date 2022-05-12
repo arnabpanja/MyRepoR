@@ -2,7 +2,7 @@
 title: "Tidy Tuesday - Solar/Wind Utilties"
 knit: (function(input_file, encoding){
         out_dir <- '../../docs';
-        rmarkdown::render(input_file, encoding = encoding, output_file =               file.path(dirname(input_file), out_dir, 'index.html'))   
+        rmarkdown::render(input_file, encoding = encoding, output_file =               file.path(dirname(input_file), out_dir, 'index.html'))
       })
 author: "Arnab Panja"
 date: "`r format(Sys.Date(), '%d %b %Y')`"
@@ -17,9 +17,10 @@ library(janitor)
 library(ggbump)
 library(patchwork)
 library(ggtext)
+library(ggalt)
 ```
 
-## 1. Introduction 
+### 1. Introduction 
 
 This paper will be primarily focused in showing us a few unique ways to create charts and annotate texts to make the charts aesthetically beautiful. Along its way it will also discuss data wrangling techniques available in **R**. So let us first load the data and see its summary characteristics. 
 
@@ -50,7 +51,7 @@ summary(df_average_cost)
 
 ```
 
-## 2. Power Capacity - Variation by Year 
+### 2. Power Capacity - Variation by Year 
 
 
 We will now study how the capacity has varied over the years for each of the power sources using the df_capacity data frame loaded above. 
@@ -194,13 +195,107 @@ The combined plot shows that Solar Power capacity has increased the most. Wind P
 
 Another wonderful feature is the use of markdown elements in subtitle and the color of legends being used as color of texts of the subtitle. This helps us remove the 7 color types in the legend. This makes the final plot neat and much more aesthetically appealing. All of this was made possible by **{ggtext}** package. This package brings the facility of markdown formatting into the plot elements. 
 
+We now have a look at how the power generation capacity has changed over the years for both standalone and hybrid. Are we generating more power over the year or not. 
+
+```{r dumbell_chart_standalone,include=TRUE,echo=TRUE}
+
+p_standalone_dumbbell <- df_capacity |> mutate(across(.cols = c(3:7), 
+                             .fns = ~ round(.x, digits = 2))) |> 
+  mutate(across(.cols = c(3:7), .fns = ~ replace_na(.x, 0))) |> 
+  group_by(year) |> 
+  summarise(standalone_prior = sum(standalone_prior), 
+            standalone_new = sum(standalone_new)) |> 
+  ungroup() |> 
+  mutate(standalone_total = standalone_prior + standalone_new) |> 
+  select(year, standalone_prior, standalone_total) |> 
+  mutate(year = as.character(year)) |> 
+  arrange(-as.numeric(year)) |> 
+  ggplot() + 
+  geom_dumbbell(mapping = aes(y = year, 
+                              x = standalone_prior, 
+                              xend = standalone_total), 
+                       size = 2, 
+                       color = "blue", 
+                       size_x = 4, 
+                       size_xend = 6, 
+                       colour_x = "green", 
+                       colour_xend = "magenta") + 
+  scale_x_continuous() + 
+  theme_minimal() +
+  theme(plot.title = element_markdown(), 
+        plot.subtitle = element_markdown(), 
+        axis.title = element_markdown(colour = "blue", 
+                                      face = "bold")) + 
+  labs(x = "Standalone Capacity (MWs)", 
+       y = "Year", 
+       title = "<span style='color:brown3;'>**Standalone Power Generation**</span>", 
+       subtitle = "<span style='color:brown;'>Standalone power generation capacity was enhanced considerably since 2016</span>")
+
+p_standalone_dumbbell
+
+```
+
+So the above plot shows that the standalone power was generated more since 2016 as since that year there has been a large difference between _standalone power prior_ and _standalone power new_. 
+**The above data is across all power generation sources**. 
+
+Along the similar lines above let us study the power generation of **hybrid power** over these years 
+
+```{r dumbell_chart_hybrid,include=TRUE, echo=TRUE}
 
 
-## 3. Average Cost - Variation by Year 
+p_hybrid_dumbbell <- df_capacity |> mutate(across(.cols = c(3:7), 
+                             .fns = ~ round(.x, digits = 2))) |> 
+  mutate(across(.cols = c(3:7), .fns = ~ replace_na(.x, 0))) |> 
+  group_by(year) |> 
+  summarise(hybrid_prior = sum(hybrid_prior), 
+            hybrid_new = sum(hybrid_new)) |> 
+  ungroup() |> 
+  mutate(hybrid_total = hybrid_prior + hybrid_new) |> 
+  select(year, hybrid_prior, hybrid_total) |> 
+  mutate(year = as.character(year)) |> 
+  arrange(-as.numeric(year)) |> 
+  ggplot() + 
+  geom_dumbbell(mapping = aes(y = year, 
+                              x = hybrid_prior, 
+                              xend = hybrid_total), 
+                       size = 2, 
+                       color = "blue", 
+                       size_x = 4, 
+                       size_xend = 6, 
+                       colour_x = "green", 
+                       colour_xend = "magenta") + 
+  theme_minimal() +
+  theme(plot.title = element_markdown(), 
+        plot.subtitle = element_markdown(), 
+        axis.title = element_text(colour = "blue", 
+                                      face = "bold")) + 
+  labs(x = "Hybrid Capacity (MWs)", 
+       y = "Year", 
+       title = "<span style='color:brown3;'>**Hybrid Power Generation**</span>", 
+       subtitle = "<span style='color:brown;'>Hybrid power generation capacity data was not available upto 2017<br>Since 2019 there has been a steady increase in the generation capacity</span>")
+
+p_hybrid_dumbbell
+
+```
+
+```{r save_stand_dumbbell, include=FALSE, echo=FALSE}
+
+ggsave(filename = "../../plots/solar_wind_utilities/p_standalone_dumbbell.png",        plot = p_standalone_dumbbell)
+
+ggsave(filename ="../../plots/solar_wind_utilities/p_hybrid_dumbbell.png",        plot = p_hybrid_dumbbell )
+
+```
+
+
+The above plot shows that no data was available from 2014 to 2017 for Hybrid power capacity. The data from 2018 suggests that power generation has increased significantly since then. **The above data is across all power generation sources**. 
+
+
+
+### 3. Average Cost - Variation by Year 
 
 We will now turn our focus into the study of average cost and its variation by power sources year by year. So let us now work with the average cost data frame
 
-```{r plot_average_cost, include=TRUE, echo=TRUE}
+```{r plot_average_cost, include=TRUE, echo=TRUE, fig.height=10, fig.width=10}
 
 p_avgcost <- df_average_cost |> pivot_longer(cols = ends_with("mwh"), 
                                 names_to = "gentype", 
@@ -223,7 +318,7 @@ p_avgcost <- df_average_cost |> pivot_longer(cols = ends_with("mwh"),
                           label = mwh, 
                           group = gentype), 
             position = position_dodge(width = 0.9), 
-            size = 2.5, 
+            size = 3, 
             hjust = 1, 
             color = "white", 
             fontface = "bold") + 
@@ -247,6 +342,10 @@ p_avgcost
 ```
 
 
+The above stacked bar plot is a classic example of using the **{ggtext}** package to remove the cluttering of legends in a plot. The legends, hence have been removed and the title text has been **color coded** according the colors of the bars. 
+
+The above plot shows cost of power for every source has decreased over the years. This goes hand in hand with the increasing capacity trend as exhibited by the previous plot. 
+
 ```{r save_avg_cost_plot,include=FALSE,echo=FALSE}
 
 ggsave(filename = "../../plots/solar_wind_utilities/p_avgcost.png", 
@@ -254,9 +353,6 @@ ggsave(filename = "../../plots/solar_wind_utilities/p_avgcost.png",
 
 ```
 
-The above stacked bar plot is a classic example of using the **{ggtext}** package to remove the cluttering of legends in a plot. The legends, hence have been removed and the title text has been **color coded** according the colors of the bars. 
-
-The above plot shows cost of power for every source has decreased over the years. This goes hand in hand with the increasing capacity trend as exhibited by the previous plot. 
 
 Hope this notebook has provided a good learning tour of the **_R_** Ecosystem and the benefits it provides for data analysis, data wrangling and data visualization.
 
