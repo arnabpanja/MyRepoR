@@ -61,7 +61,7 @@ df.x <- data.frame(a = sample(1:5, 5),
 
 df.x
 
-df.x |> transmute(across(where(is.numeric), 
+df.x |> dplyr::transmute(across(where(is.numeric), 
                       .fns = scale,     
                       .names = "normed_{.col}"))
 
