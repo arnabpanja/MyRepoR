@@ -167,20 +167,22 @@ df1 <- data.frame(ID = rep(1, 15),
 # create a column to store when the hours > 24 
 df1 <- df1 |> clean_names() |> 
   group_by(id) |> arrange(admit_to_perform) |> 
-  mutate(admit_to_perform = round(admit_to_perform, digits = 2), 
+  mutate(admit_to_perform = round(admit_to_perform, 
+                                  digits = 2), 
          rowid = row_number(), 
-         more_than_24 = ifelse(admit_to_perform > 24, 1, 0))
+         more_than_24 = ifelse(admit_to_perform > 24, 1, 0)) |> 
+  ungroup()
 
 df1 
 
-# store the row index for more than 24 hours cases 
+# store the lower row index for more than 24 hours cases 
 
 df1$ref.indx <- apply(X = df1, MARGIN = 1, FUN = function(x) 
   ifelse(x[5] == 0, 1, min(which((x[2] - df1[df1$admit_to_perform < x[2] && df1$id == x[1], ]$admit_to_perform) < 24))))
 
 df1
 
-# use the row index to calculate running mean 
+# use the lower row index to calculate running mean 
 
 df1$run.mean <- apply(X = df1, MARGIN = 1, FUN = function(x) 
   ifelse(x[4] == 1, NA, sum(df1[df1$rowid >= x[6] & df1$rowid <= (x[4] - 1) & df1$id == x[1], ]$resp_rate)/(((x[4] - 1) - x[6]) + 1)))
