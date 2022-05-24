@@ -156,13 +156,21 @@ dplyr::bind_rows("df-A/c" = df.x |> dplyr::select(A, C) |>
 # R for Data Science slack question 6 ------
 # mean over a varying window 
 
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(janitor))
+library(dplyr, warn.conflicts = FALSE)
+library(janitor, warn.conflicts = FALSE)
 
 
 df1 <- data.frame(ID = rep(1, 15), 
                   Admit_to_Perform = c(1.07, 1.07, 1.70, 3.73, 3.73, 4.20, 8.87, 11.68, 14.80, 15.67, 19.08, 23.15, 29.68, 36.03, 39.08), 
                   Resp_Rate = c(18, 17, 18, 17, 16, 16, 16, 16, 16, 17, 16, 16, 16, 16, 16))
+
+df2 <- data.frame(ID = rep(2, 15), 
+                  Admit_to_Perform = c(1.07, 1.07, 1.70, 3.73, 3.73, 4.20, 8.87, 11.68, 14.80, 15.67, 19.08, 23.15, 29.68, 36.03, 39.08), 
+                  Resp_Rate = c(18, 17, 18, 16, 16, 16, 16, 18, 16, 17, 17, 16, 16, 16, 16))
+
+df1 <- rbind(df1, df2)
+
+df1
 
 # create a column to store when the hours > 24 
 df1 <- df1 |> clean_names() |> 
@@ -171,21 +179,23 @@ df1 <- df1 |> clean_names() |>
                                   digits = 2), 
          rowid = row_number(), 
          more_than_24 = ifelse(admit_to_perform > 24, 1, 0)) |> 
-  ungroup()
+  ungroup() |> 
+  arrange(id, rowid)
 
-df1 
 
 # store the lower row index for more than 24 hours cases 
 
 df1$ref.indx <- apply(X = df1, MARGIN = 1, FUN = function(x) 
-  ifelse(x[5] == 0, 1, min(which((x[2] - df1[df1$admit_to_perform < x[2] && df1$id == x[1], ]$admit_to_perform) < 24))))
+  ifelse(x[5] == 0, 
+         1, 
+         min(which((x[2] - df1[df1$admit_to_perform < x[2] & df1$id == x[1], ]$admit_to_perform) < 24))))
 
 df1
 
 # use the lower row index to calculate running mean 
 
 df1$run.mean <- apply(X = df1, MARGIN = 1, FUN = function(x) 
-  ifelse(x[4] == 1, NA, sum(df1[df1$rowid >= x[6] & df1$rowid <= (x[4] - 1) & df1$id == x[1], ]$resp_rate)/(((x[4] - 1) - x[6]) + 1)))
+  ifelse(x[4] == 1, NA, mean(df1[df1$rowid >= x[6] & df1$rowid <= (x[4] - 1) & df1$id == x[1], ]$resp_rate)))
 
 # the last column gives the output 
 
@@ -194,5 +204,8 @@ df1
 # remove the temporary columns 
 
 df1[, -c(4:6)]
+
+
+
 
 
