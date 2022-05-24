@@ -172,7 +172,9 @@ df1 <- rbind(df1, df2)
 
 df1
 
-# create a column to store when the hours > 24 
+# create column to store when the hours > 24
+# arrange the records by id and rowid
+# convert it back to data frame 
 df1 <- df1 |> clean_names() |> 
   group_by(id) |> arrange(admit_to_perform) |> 
   mutate(admit_to_perform = round(admit_to_perform, 
@@ -180,7 +182,7 @@ df1 <- df1 |> clean_names() |>
          rowid = row_number(), 
          more_than_24 = ifelse(admit_to_perform > 24, 1, 0)) |> 
   ungroup() |> 
-  arrange(id, rowid)
+  arrange(id, rowid) |> as.data.frame()
 
 
 # store the lower row index for more than 24 hours cases 
