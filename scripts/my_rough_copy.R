@@ -208,6 +208,40 @@ df1
 df1[, -c(4:6)]
 
 
+# R for Data Science slack question 7 ------
+
+samp <- data.frame(a = c(1,5,2),
+                   b = c(3,1,4),
+                   c = c(2,0,3)
+                  )
+
+# Add column for max 
+samp$max <- apply(X = samp, MARGIN = 1, FUN = function(x) max(x))
+
+# Add column for min 
+samp$min <- apply(X = samp, MARGIN = 1, FUN = function(x) min(x))
+
+samp
+
+# Convert columns to list with max & min alongside 
+samp.list <- apply(X = samp[1:3], MARGIN = 2, FUN = function(x) 
+  list(x, samp[,"max"], samp[, "min"]))
+
+
+samp.list
+
+# classify column elements using this function
+fn.classify <- function(x){
+  list(x[[1]], ifelse(x[[1]] == x[[2]], "Max", ifelse(x[[1]] == x[[3]], "Min", "None")))
+}
+
+samp.out <- lapply(X = samp.list, FUN = fn.classify)
+
+# final output with classifications
+samp.out
+
+
+                  
 
 
 
