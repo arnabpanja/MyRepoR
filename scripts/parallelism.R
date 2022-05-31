@@ -24,7 +24,7 @@ rm(list = "df.temp")
 # start parallel activity - 1
 
 clust <- makeCluster(detectCores(), 
-                     type = "PSOCK")
+                     type = "PSOCK") # use FORK in linux/UNIX
 
 clusterExport(clust, "df1", 
               envir = environment())
@@ -66,7 +66,7 @@ rm(list = c("df1_less24", "ls.new"))
 
 df1_more24 <- df1[df1$more_24 == 1, ]
 
-clust <- makeCluster(detectCores(), type = "PSOCK")
+clust <- makeCluster(detectCores(), type = "PSOCK") # use FORK in linux/UNIX
 
 clusterExport(clust, c("df1", "df1_more24"), envir = environment())
 
