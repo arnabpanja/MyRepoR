@@ -1,4 +1,4 @@
-library(data.table)
+suppressPackageStartupMessages(library(data.table))
 library(parallel)
 
 #set.seed(124)
@@ -102,14 +102,14 @@ return(df5[df5$id %in% sample(1:n.value, 3), ] |> (\(x){cbind("iter" = rep(y, nr
 
 ls.times <- list(iter = NULL, nvalue = NULL, time = NULL)
 
-samples <- 100000 #sample(x = 3:10000, size = 10, replace = FALSE)
+samples <- 100000 #sample(x = 3:50, size = 20, replace = FALSE)
 
 df.final <- data.frame()
 
 for(i in seq_along(samples)){
   
   
-  print(paste0("Working on Iteration = ", i, " with nvalue = ", samples[i]))
+  print(paste0("Working on Iteration = ", i, " with nvalue = ", format(samples[i], scientific = FALSE)))
   
   start.time <- Sys.time()
   df.final <- rbind(fn.dataframe.parallel(samples[i], i), df.final) 
