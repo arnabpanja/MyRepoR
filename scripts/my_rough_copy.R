@@ -252,8 +252,145 @@ lapply(X = samp.out,
        FUN = function(x) as_tibble(x))
 
 
+# R for Data Science Slack Question 8 --------
+# generate a pivot table in R 
 
-                  
+library(dplyr, warn.conflicts = FALSE)
+library(tidyr, warn.conflicts = FALSE)
+library(purrr, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
 
 
 
+data <- structure(list(
+  Lp = c(
+    "1", "2", "3", "4", "5", "6", "7", "8",
+    "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+    "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+    "31", "32"
+  ), Group = structure(c(
+    1L, 1L, 2L, 2L, 1L, 1L, 2L,
+    2L, 1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L, 1L, 1L, 2L,
+    2L, 1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L
+  ), levels = c(
+    "Radiowaves",
+    "Soniccurrents"
+  ), class = "factor"), Gender = structure(c(
+    1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L
+  ), levels = c(
+    "K",
+    "M"
+  ), class = "factor"), Time = structure(c(
+    1L, 1L, 1L, 1L, 2L,
+    2L, 2L, 2L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 1L, 1L, 1L, 1L, 2L,
+    2L, 2L, 2L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L
+  ), levels = c(
+    "before_treatment",
+    "two_procedures", "three_procedures", "after_treatment"
+  ), class = "factor"),
+  Value_measured = c(
+    3, 5, 3, 7, 1, 5, 3, 5, 3, 1, 5, 7, 0,
+    5, 1, 5, 2, 4, 1, 4, 2, 5, 4, 6, 2, 5, 4, 2, 2, 4, 6, 1
+  )
+), class = c(
+  "grouped_df",
+  "tbl_df", "tbl", "data.frame"
+), row.names = c(NA, -32L), groups = structure(list(
+  Gender = structure(c(
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L
+  ), levels = c("K", "M"), class = "factor"),
+  Time = structure(c(
+    1L, 1L, 2L, 2L, 3L, 3L, 4L, 4L, 1L, 1L,
+    2L, 2L, 3L, 3L, 4L, 4L
+  ), levels = c(
+    "before_treatment", "two_procedures",
+    "three_procedures", "after_treatment"
+  ), class = "factor"),
+  Group = structure(c(
+    1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L,
+    1L, 2L, 1L, 2L, 1L, 2L
+  ), levels = c("Radiowaves", "Soniccurrents"), class = "factor"), .rows = structure(list(
+    1:2, 3:4, 5:6,
+    7:8, 9:10, 11:12, 13:14, 15:16, 17:18, 19:20, 21:22,
+    23:24, 25:26, 27:28, 29:30, 31:32
+  ), ptype = integer(0), class = c(
+    "vctrs_list_of",
+    "vctrs_vctr", "list"
+  ))
+), row.names = c(NA, -16L), class = c(
+  "tbl_df",
+  "tbl", "data.frame"
+), .drop = TRUE))
+
+
+data_clean <- data |> janitor::clean_names() 
+
+# create summary pivot table
+
+data_trf <- data_clean |> 
+  mutate(value_meaaured = as.character(value_measured)) |> 
+  group_by(time, group, gender, value_measured) |> 
+  summarize(cnt = n(), .groups = "drop") |> 
+  pivot_wider(names_from = value_measured, 
+              values_from = cnt, 
+              names_prefix = "val_")
+
+
+
+# rearrange columns 
+
+colnames_data_trf <- str_c("val_", suppressWarnings(as.numeric(
+  str_replace_all(colnames(data_trf), "val_", ""))) |> (\(x){sort(x[!is.na(x)])})())
+
+# calculate row wise sums
+
+data_trf_final <- data_trf |> select(1:3, all_of(colnames_data_trf)) |> rowwise() |> mutate(Sum = sum(c_across(-c(1:3)), na.rm = TRUE)) |> ungroup()
+
+
+# create the last row 
+tbl_extra <- tibble::tribble(
+  ~time, ~group, ~gender,
+  "NA", "NA", "Sum"
+)
+
+
+# calculate column wise sums 
+
+data_trf_final <- bind_rows(data_trf_final, 
+                            bind_cols(tbl_extra, 
+                                      map_df(data_trf_final[, -c(1:3)], 
+                                             .f = ~ sum(.x, na.rm = TRUE))))
+
+
+data_trf_final <- data_trf_final |> 
+  mutate(new_time = lag(time), 
+         new_group = lag(group)) |> 
+  mutate(time = case_when(
+  is.na(new_time) ~ time,
+  new_time == time ~ NA_character_,
+  time =="NA" ~ NA_character_, 
+  TRUE ~ time
+),
+group = case_when(
+  is.na(new_group) ~ group,
+  new_group == group ~ NA_character_,
+  group =="NA" ~ NA_character_, 
+  TRUE ~ group
+)) |> select(c(1:12))
+
+
+# replace column names
+
+colnames(data_trf_final) <- str_replace_all(string = colnames(data_trf_final), 
+                                            pattern = "val_", 
+                                            replacement = "")
+
+# output the table using knitr
+
+opts <- options(knitr.kable.NA = "")
+
+
+knitr::kable(data_trf_final, "simple")
