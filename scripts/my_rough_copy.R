@@ -394,3 +394,37 @@ opts <- options(knitr.kable.NA = "")
 
 
 knitr::kable(data_trf_final, "simple")
+
+
+# R For Data Science Slack Question 9 ------
+
+library(readxl, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
+
+# load data
+# create a new column removing time-stamps
+practice_data <- read_excel(path = "data/practice_data.xlsx", 
+                                    sheet = "Sheet1") |> 
+  janitor::clean_names() |> 
+  mutate(new_date = as.Date(as.character(date), 
+                        format = "%Y-%m-%d"))
+
+# create a look up data frame with 
+# distinct dates and their day numbers 
+date_master <- practice_data |> 
+distinct(new_date) |> arrange(new_date) |> 
+  mutate(day_num = str_c("Day ", 
+                          row_number()))
+
+# left join and 
+# Use "NA" in case of no match in look up
+practice_output <- left_join(x = practice_data, 
+                             y = date_master, 
+                             by = "new_date") |> 
+  select(date, day_num, sub_county, wards) |> 
+  mutate(day_num = coalesce(day_num, "NA"))
+
+
+head(practice_output, 20)
+
