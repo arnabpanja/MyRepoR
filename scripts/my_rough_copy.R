@@ -419,11 +419,10 @@ distinct(new_date) |> arrange(new_date) |>
 
 # left join and 
 # Use "NA" in case of no match in look up
-practice_output <- left_join(x = practice_data, 
+practice_output <- inner_join(x = practice_data, 
                              y = date_master, 
                              by = "new_date") |> 
-  select(date, day_num, sub_county, wards) |> 
-  mutate(day_num = coalesce(day_num, "NA"))
+  select(date, day_num, sub_county, wards)
 
 
 head(practice_output, 20)
