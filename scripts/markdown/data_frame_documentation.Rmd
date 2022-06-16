@@ -22,7 +22,7 @@ library(DiagrammeR)
 Hello All !!! 
 Another little **RMARKDOWN** document. Now, what has prompted me to create this document ? 
 
-There are two drivers for it
+There are two drivers for it 
 
 #. The **comment** function in **R** that can help describe a column in a data frame
 #. A question in the **R4DS Online Learning Community** on how to document a data frame. 
