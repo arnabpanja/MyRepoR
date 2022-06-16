@@ -1,0 +1,224 @@
+---
+title: "R Data Frames - Documentation"
+author: "Arnab Panja"
+date: "`r format(Sys.Date(), '%d-%b-%Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(palmerpenguins, warn.conflicts = FALSE)
+suppressPackageStartupMessages(library(data.table))
+library(dm, warn.conflicts = FALSE)
+library(DiagrammeR)
+```
+
+### **Introduction**
+
+Hello All !!! 
+Another little **RMARKDOWN** document. Now, what has prompted me to take some time out of the busy schedule and create this document and share it with **R** Community? 
+
+There are two drivers for it and they are 
+
+#. The **comment** function in **R** that can help describe a column in a data frame
+#. A question in the **R4DS Online Learning Community** on how to document a data frame. 
+
+So we have a lot of methods of documenting our data model/data frame and we can use Excel to do it. There are few commercial tools out there in the market, which when given a set of database tables, can re-engineer an entity relationship diagram. 
+But the question is, given that we do NOT want to use Excel and we also do NOT want to use any commercial tool but still if we want to have some basic level of documentation using our favorite language in **R** then what could be a plausible approach.
+
+This document may shed some light on this. 
+
+So let us watch how we can go about creating a basic documentation of our data frames. An analysis involves a number of data frames and a documentation, accompanied by a model diagram does go a long way in making things self-explanatory. 
+
+
+#### **Palmer Penguins Data Set** 
+
+So let us load the Palmer Penguins dataset.  
+
+```{r load_df, include=TRUE, echo=TRUE}
+df.penguins <- as.data.table(penguins)
+str(df.penguins)
+
+```
+
+The **str** function shows the structure of the data frame at a glance. 
+
+
+#### **The comment function**
+
+Not let us come to the first magic, the use of **comment** function. 
+We will use the **comment** function to document the variables/columns in the Palmer Penguins data set and this is how it works. 
+
+```{r docuemnt_df, include=TRUE, echo=TRUE}
+comment(df.penguins$species) <- "This field stores the species of the Penguin"
+
+comment(df.penguins$island) <- "This field stores the island of Palmer Archipelago"
+
+comment(df.penguins$bill_length_mm) <- "This field stores the penguin's bill length in mm"
+
+
+comment(df.penguins$bill_depth_mm) <- "This field stores the penguin's bill depth in mm"
+
+comment(df.penguins$flipper_length_mm) <- "This field stores the penguin's flipper length in mm"
+
+comment(df.penguins$body_mass_g) <- "This field stores body mass of the penguin in gms"
+
+comment(df.penguins$sex) <- "This field stores gender of the penguin"
+
+
+comment(df.penguins$year) <- "This field is the year when the observation was recorded"
+
+```
+
+And how does the data frame look like after that ? 
+
+```{r df_looks, include=TRUE, echo=TRUE}
+
+str(df.penguins)
+
+```
+
+
+So we can now see that each variable includes a comment attribute describing the variable. The output does not look like being much readable but as we show below we can make them tidy with a little bit of wrangling. 
+
+#### **Tidying the Descriptions**
+
+Let us create a new data frame which will hold the descriptions of the data frame columns.   
+
+```{r create_col_desc, include=TRUE, echo=TRUE}
+
+df.cols <- as.data.frame(do.call(rbind, 
+                                 lapply(df.penguins, function(x) 
+                                   attributes(x)$comment)))
+
+df.cols <- as.data.frame(cbind(dfname = rep("df.penguins", 
+                                            nrow(df.cols)), 
+                               cols = rownames(df.cols), 
+                               desc = df.cols$V1))
+
+rownames(df.cols) <- 1:nrow(df.cols)
+
+knitr::kable(x = df.cols, format = "simple", row.names = FALSE)
+
+```
+
+Our documentation is now taking shape !!!.
+
+#### **Data Types**
+
+A neat documentation should also contain the data type of the columns. Now let us get the data types of the data frame columns.  
+
+```{r df_col_types, include=TRUE, echo=TRUE}
+
+df.coltypes <- as.data.frame(do.call(rbind, 
+                                     lapply(df.penguins, 
+                                            class)))
+
+
+df.coltypes <- as.data.frame(cbind(dfname = rep("df.penguins", 
+                                                nrow(df.coltypes)), 
+                                   cols = rownames(df.coltypes), 
+                                   datatype = df.coltypes$V1))
+
+rownames(df.coltypes) <- 1:nrow(df.coltypes)
+
+
+all.df.cols <- merge(df.cols, 
+                     df.coltypes, 
+                     by = c("dfname", "cols")) |> (\(x){cbind(x[, 1:2], 
+               dtype = x$datatype, 
+               description = x$desc)})()
+
+knitr::kable(x = all.df.cols, format = "simple", row.names = FALSE)
+
+```
+
+The **dtype** column now shows the data type of the columns. 
+
+#### **Documenting the Keys**
+
+Since we cannot set keys on a data frame but a typical table will have keys, therefore we have used data.table and we would set some keys and include them in the documentation. 
+
+```{r create_keys, include=TRUE, echo=TRUE}
+
+setkey(df.penguins, year, species, island)
+
+df.colkeys <- data.frame(dfname = "df.penguins", 
+                         keys = key(df.penguins), 
+                         flag = rep(1, 
+                                    length(key(df.penguins))))
+
+
+
+all.df.cols <- merge(all.df.cols, 
+                     df.colkeys, 
+                     by.x = c("dfname","cols"), 
+                     by.y = c("dfname", "keys"), 
+                     all.x = TRUE)
+
+colnames(all.df.cols)[5] <- "iskey"
+
+all.df.cols$iskey <- ifelse(is.na(all.df.cols$iskey), "No", "Yes")
+
+
+```
+
+Now we have documented the penguins data frame with all its bits and pieces. Lets check out the documentation in a tabular form. 
+
+```{r df_doc, include=TRUE, echo=TRUE}
+
+knitr::kable(all.df.cols[order(all.df.cols$dfname, 
+-as.numeric(as.factor((all.df.cols$iskey)))), c(1:3, 5, 4)], 
+             format = "simple", 
+             row.names = FALSE)
+
+```
+
+Isn't it nice ? The more the data frames involved in the analysis, the more is the value that we may get out of this simple documentation. 
+
+
+#### **The ERD**
+
+Now that we have shown how a documentation looks like, we would check out how a data model diagram looks like and how we can build that in R. In the above analysis, we have used a few data frame to document the Palmer Penguins data set.
+
+So, let us create a relationship diagram involving them. Well, this will not require any custom code, but will require the use of the beautiful **dm** package in **R** and in this way as below.  
+
+```{r create_dm, include=TRUE, echo=TRUE}
+
+# create a dm object 
+dict.dm <- dm(df.cols, 
+              df.coltypes, 
+              df.colkeys)
+
+# add the primary keys 
+dict.dm.pks <- dict.dm |> 
+  dm_add_pk(df.cols, 
+            c("dfname", "cols")) |> 
+  dm_add_pk(df.coltypes, 
+            c("dfname", "cols")) |> 
+  dm_add_pk(df.colkeys, 
+            c("dfname" , "keys"))
+
+# add foreign keys
+dict.dm.allkeys <- dict.dm.pks |> 
+  dm_add_fk(df.coltypes, 
+            c("dfname", "cols"), 
+            df.cols) |> 
+  dm_add_fk(df.colkeys, 
+            c("dfname", "keys"), 
+            df.cols)
+
+# draw the model 
+dm_draw(dm = dict.dm.allkeys, 
+        rankdir = "LR", 
+        view_type = "all", 
+        graph_name = "Dictionary ERD")
+
+```
+
+So, coupled with the data frame documentation table, the above diagram does give us a picture of the data frames involved, with a reasonable description of it's important parts and a model diagram showing the relationships between them. 
+
+So this is how, without using Excel, without using any commercial tools we can still generate a basic documentation of our data frames. 
+
+
+
