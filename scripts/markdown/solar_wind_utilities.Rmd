@@ -1,9 +1,5 @@
 ---
 title: "Tidy Tuesday - Solar/Wind Utilties"
-knit: (function(input_file, encoding){
-        out_dir <- '../../docs';
-        rmarkdown::render(input_file, encoding = encoding, output_file =               file.path(dirname(input_file), out_dir, 'index.html'))
-      })
 author: "Arnab Panja"
 date: "`r format(Sys.Date(), '%d %b %Y')`"
 output:
