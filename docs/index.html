@@ -1588,9 +1588,8 @@ pre code {
 <div id="introduction" class="section level3">
 <h3><strong>Introduction</strong></h3>
 <p>Hello All !!! Another little <strong>RMARKDOWN</strong> document.
-Now, what has prompted me to take some time out of the busy schedule and
-create this document and share it with <strong>R</strong> Community?</p>
-<p>There are two drivers for it and they are</p>
+Now, what has prompted me to create this document ?</p>
+<p>There are two drivers for it</p>
 <ol>
 <li>The <strong>comment</strong> function in <strong>R</strong> that can
 help describe a column in a data frame</li>
@@ -1745,7 +1744,9 @@ recorded</td>
 </tr>
 </tbody>
 </table>
-<p>Our documentation is now taking shape !!!.</p>
+<p>Our documentation is now taking shape !!! and
+<strong>df.cols</strong> is one of the data frames that holds the
+documentation.</p>
 </div>
 <div id="data-types" class="section level4">
 <h4><strong>Data Types</strong></h4>
@@ -1834,7 +1835,8 @@ recorded</td>
 </tbody>
 </table>
 <p>The <strong>dtype</strong> column now shows the data type of the
-columns.</p>
+columns. Please remember that <strong>df.coltypes</strong> is another
+data frame that holds the column types of the data frame.</p>
 </div>
 <div id="documenting-the-keys" class="section level4">
 <h4><strong>Documenting the Keys</strong></h4>
@@ -1859,6 +1861,10 @@ all.df.cols &lt;- merge(all.df.cols,
 colnames(all.df.cols)[5] &lt;- &quot;iskey&quot;
 
 all.df.cols$iskey &lt;- ifelse(is.na(all.df.cols$iskey), &quot;No&quot;, &quot;Yes&quot;)</code></pre>
+<p><strong>df.colkeys</strong> holds the documentation of the keys of
+the data frame. we will come back to these data frame in the
+<strong>ERD</strong> section below to check out the model that we have
+built to enable this documentation.</p>
 <p>Now we have documented the penguins data frame with all its bits and
 pieces. Lets check out the documentation in a tabular form.</p>
 <pre class="r"><code>knitr::kable(all.df.cols[order(all.df.cols$dfname, 
@@ -1943,9 +1949,10 @@ documentation.</p>
 <div id="the-erd" class="section level4">
 <h4><strong>The ERD</strong></h4>
 <p>Now that we have shown how a documentation looks like, we would check
-out how a data model diagram looks like and how we can build that in R.
-In the above analysis, we have used a few data frame to document the
-Palmer Penguins data set.</p>
+out how a data model diagram looks like and how we can build that in
+<strong>R</strong>. Data frames <strong>df.cols</strong>,
+<strong>df.colkeys</strong> and <strong>df.coltypes</strong> have been
+used as underlying data frames to enable the above documentation.</p>
 <p>So, let us create a relationship diagram involving them. Well, this
 will not require any custom code, but will require the use of the
 beautiful <strong>dm</strong> package in <strong>R</strong> and in this
@@ -1978,8 +1985,8 @@ dm_draw(dm = dict.dm.allkeys,
         rankdir = &quot;LR&quot;, 
         view_type = &quot;all&quot;, 
         graph_name = &quot;Dictionary ERD&quot;)</code></pre>
-<div id="htmlwidget-f7d8076da7198ab7fb11" style="width:672px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-f7d8076da7198ab7fb11">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Dictionary ERD\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"df.colkeys\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.colkeys<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">keys<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">flag<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, keys\"><U>dfname, keys<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"df.cols\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.cols<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">cols<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">desc<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, cols\"><U>dfname, cols<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"df.coltypes\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.coltypes<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">cols<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">datatype<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, cols\"><U>dfname, cols<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"df.coltypes\":\"dfname, cols\"->\"df.cols\":\"dfname, cols\"\n\"df.colkeys\":\"dfname, keys\"->\"df.cols\":\"dfname, cols\"\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e82cdaa51ea69ccb8062" style="width:672px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e82cdaa51ea69ccb8062">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Dictionary ERD\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"df.colkeys\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.colkeys<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">keys<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">flag<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, keys\"><U>dfname, keys<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"df.cols\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.cols<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">cols<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">desc<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, cols\"><U>dfname, cols<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"df.coltypes\" [label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#555555\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#EFEBDD\" BORDER=\"0\"><FONT COLOR=\"#000000\">df.coltypes<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">dfname<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">cols<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\">datatype<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#FFFFFF\" PORT=\"dfname, cols\"><U>dfname, cols<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"df.coltypes\":\"dfname, cols\"->\"df.cols\":\"dfname, cols\"\n\"df.colkeys\":\"dfname, keys\"->\"df.cols\":\"dfname, cols\"\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
 <p>So, coupled with the data frame documentation table, the above
 diagram does give us a picture of the data frames involved, with a
 reasonable description of it’s important parts and a model diagram

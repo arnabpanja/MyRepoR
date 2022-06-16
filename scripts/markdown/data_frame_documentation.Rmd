@@ -20,9 +20,9 @@ library(DiagrammeR)
 ### **Introduction**
 
 Hello All !!! 
-Another little **RMARKDOWN** document. Now, what has prompted me to take some time out of the busy schedule and create this document and share it with **R** Community? 
+Another little **RMARKDOWN** document. Now, what has prompted me to create this document ? 
 
-There are two drivers for it and they are 
+There are two drivers for it
 
 #. The **comment** function in **R** that can help describe a column in a data frame
 #. A question in the **R4DS Online Learning Community** on how to document a data frame. 
@@ -106,7 +106,7 @@ knitr::kable(x = df.cols, format = "simple", row.names = FALSE)
 
 ```
 
-Our documentation is now taking shape !!!.
+Our documentation is now taking shape !!! and **df.cols** is one of the data frames that holds the documentation. 
 
 #### **Data Types**
 
@@ -137,7 +137,7 @@ knitr::kable(x = all.df.cols, format = "simple", row.names = FALSE)
 
 ```
 
-The **dtype** column now shows the data type of the columns. 
+The **dtype** column now shows the data type of the columns. Please remember that **df.coltypes** is another data frame that holds the column types of the data frame. 
 
 #### **Documenting the Keys**
 
@@ -167,6 +167,8 @@ all.df.cols$iskey <- ifelse(is.na(all.df.cols$iskey), "No", "Yes")
 
 ```
 
+**df.colkeys** holds the documentation of the keys of the data frame. we will come back to these data frame in the **ERD** section below to check out the model that we have built to enable this documentation. 
+
 Now we have documented the penguins data frame with all its bits and pieces. Lets check out the documentation in a tabular form. 
 
 ```{r df_doc, include=TRUE, echo=TRUE}
@@ -183,7 +185,7 @@ Isn't it nice ? The more the data frames involved in the analysis, the more is t
 
 #### **The ERD**
 
-Now that we have shown how a documentation looks like, we would check out how a data model diagram looks like and how we can build that in R. In the above analysis, we have used a few data frame to document the Palmer Penguins data set.
+Now that we have shown how a documentation looks like, we would check out how a data model diagram looks like and how we can build that in **R**. Data frames **df.cols**, **df.colkeys** and **df.coltypes** have been used as underlying data frames to enable the above documentation. 
 
 So, let us create a relationship diagram involving them. Well, this will not require any custom code, but will require the use of the beautiful **dm** package in **R** and in this way as below.  
 
