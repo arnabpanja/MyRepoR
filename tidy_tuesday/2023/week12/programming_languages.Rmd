@@ -1,0 +1,86 @@
+---
+title: "Programming Languages"
+author: "Arnab Panja"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
+library(janitor, warn.conflicts = FALSE)
+
+# color palette 
+c25 <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+
+```
+
+#### Tidy Tuesday - Programming Languages 
+
+This paper analyzes the sample data collected and published in Tidy Tuesday Week 12 data set. 
+
+
+##### 1. Load Dataset 
+
+Let us first load the data set. 
+
+```{r load_data, include=TRUE, echo=TRUE}
+languages <- readr::read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-21/languages.csv', col_types = cols()) |> janitor::clean_names() |> janitor::remove_empty(which = "rows") 
+
+```
+
+
+##### 2. Check Dataset Summary 
+
+Let us get a glimpse of the dataset 
+
+```{r data_glimpse, include=TRUE, echo=TRUE}
+
+glimpse(languages)
+
+```
+
+So there are lots of variables. The data set has `r dim(languages)[1]` observations and `r dim(languages)[2]` variables. Since there are lots of variables we can call this as a feature rich data set. Albeit the number of observations are less. 
+
+##### 2. Exploratory Data Analysis 
+
+Now let us visualize a comparative graphic of the programming languages and the number of publsihed books in the language. 
+
+```{r viz_books, include=TRUE, echo=FALSE}
+
+book_counts <- languages |> filter(!is.na(title) & !is.na(book_count)) |> select(title, book_count) |> top_n(n = 20, wt = book_count) |> mutate(new_title = case_when(
+  is.na(str_locate(title, " ")[, 1]) ~ title, 
+  .default = str_sub(title, 1, str_locate(title, " ")[, 1] - 1)
+)) |> select(title = new_title, book_count) |> arrange(-book_count)
+
+```
+So, the above table represents the programming languages having the most books. So, as we can see Java, JavaScript and Python has the most number of books published. 
+
+Let us draw a visualization of the above plot. 
+
+```{r plot_books, include=TRUE, echo=TRUE}
+
+
+p_bookcounts <- book_counts |> ggplot() + geom_col(mapping = aes(x = book_count, y = reorder(title, book_count), fill = title), show.legend = FALSE) + scale_fill_manual(values = c25) + theme(plot.title = element_text(face = "bold")) + labs(x = "Book Count", y = "Languages", title = "Programming Languages & Book Counts", subtitle = "Java, JavaScript & Python have most books !!!", caption = "Arnab Panja\n Tidy Tuesday Year 2023 Week 13")
+
+p_bookcounts
+
+```
