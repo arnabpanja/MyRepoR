@@ -101,3 +101,9 @@ You will see some plots with ggplot2 as well which does not need mentioning
 Keep watching this space for some good stuff on R !!!
 
 Thanks !!!
+
+**Contribution on 22nd July 2023**
+
+A program added to list out the packages installed and then use that list 
+to install these packages when a new R version is upgraded. The script is added in 
+my_rough_copy.R file 
