@@ -16,16 +16,20 @@ library(janitor, warn.conflicts = FALSE)
 
 # color palette 
 c25 <- c(
-  "dodgerblue2", "#E31A1C", # red
+  "dodgerblue2", 
+  "#E31A1C", # red
   "green4",
   "#6A3D9A", # purple
   "#FF7F00", # orange
-  "black", "gold1",
-  "skyblue2", "#FB9A99", # lt pink
+  "black", 
+  "gold1",
+  "skyblue2", 
+  "#FB9A99", # lt pink
   "palegreen2",
   "#CAB2D6", # lt purple
   "#FDBF6F", # lt orange
-  "gray70", "khaki2",
+  "gray70", 
+  "khaki2",
   "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
   "darkturquoise", "green1", "yellow4", "yellow3",
   "darkorange4", "brown"
@@ -52,7 +56,7 @@ languages <- readr::read_csv(file = 'https://raw.githubusercontent.com/rfordatas
 
 ##### 2. Check Dataset Summary 
 
-Let us get a glimpse of the dataset 
+Let us get a glimpse of the data set 
 
 ```{r data_glimpse, include=TRUE, echo=TRUE}
 
@@ -64,7 +68,7 @@ So there are lots of variables. The data set has `r dim(languages)[1]` observati
 
 ##### 2. Exploratory Data Analysis 
 
-Now let us visualize a comparative graphic of the programming languages and the number of publsihed books in the language. 
+Now let us visualize a comparative graphic of the programming languages and the number of published books in the language. 
 
 ```{r viz_books, include=TRUE, echo=FALSE}
 
@@ -104,5 +108,48 @@ p_bookcounts <- book_counts |>
        caption = "Arnab Panja\n Tidy Tuesday Year 2023 Week 13")
 
 p_bookcounts
+
+```
+
+Now, let us dive in further to see which programming languages have the most users. 
+
+```{r users, include=TRUE, echo=TRUE}
+users <- languages |> 
+  filter(!is.na(title) & !is.na(number_of_users)) |> 
+  select(title, number_of_users) |> 
+  top_n(n = 20, number_of_users) |> 
+  mutate(new_title = case_when(
+    !is.na(str_locate(title, " ")[, 1]) ~ str_sub(title, 1, str_locate(title, " ")[, 1] -1), 
+    .default = title)) |> 
+  select(title = new_title, number_of_users) |> 
+  arrange(desc(number_of_users))
+
+top4_users <- str_glue(paste(users$title[1:4], collapse = ", "), " are the Top 4 Languages with most users")
+
+top4_users
+
+```
+As you can see above on the Top 4 languages in terms of the users base. Now let us plot this data and see what it looks like. 
+
+```{r users_plot, include=TRUE, echo=TRUE}
+p_users <- users |> 
+  ggplot() + 
+  geom_col(mapping = aes(x = number_of_users, 
+                         y = reorder(title, number_of_users), 
+                         fill = title), 
+           show.legend = FALSE) + 
+  scale_x_continuous(labels = function(x) format(x, scientific = FALSE)) + 
+  scale_fill_manual(values = c25) + 
+  theme(
+    plot.title = element_text(face = "bold")
+    ) + 
+      labs(x = "Number of Users", 
+           y = "Languages", 
+           title = "Programming Languages & Users Count", 
+           subtitle = top4_users, 
+           caption = "Arnab Panja\nTidy Tuesday Year 2023 Week 13")
+  
+
+p_users
 
 ```
