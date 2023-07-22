@@ -107,3 +107,6 @@ Thanks !!!
 A program added to list out the packages installed and then use that list 
 to install these packages when a new R version is upgraded. The script is added in 
 my_rough_copy.R file 
+
+The auto install R Packages have now been into a new file auto_install_r_packages.R
+
