@@ -43,7 +43,9 @@ This paper analyzes the sample data collected and published in Tidy Tuesday Week
 Let us first load the data set. 
 
 ```{r load_data, include=TRUE, echo=TRUE}
-languages <- readr::read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-21/languages.csv', col_types = cols()) |> janitor::clean_names() |> janitor::remove_empty(which = "rows") 
+languages <- readr::read_csv(file = 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-21/languages.csv', col_types = cols()) |> 
+  janitor::clean_names() |> 
+  janitor::remove_empty(which = "rows") 
 
 ```
 
@@ -66,10 +68,19 @@ Now let us visualize a comparative graphic of the programming languages and the 
 
 ```{r viz_books, include=TRUE, echo=FALSE}
 
-book_counts <- languages |> filter(!is.na(title) & !is.na(book_count)) |> select(title, book_count) |> top_n(n = 20, wt = book_count) |> mutate(new_title = case_when(
+book_counts <- languages |> 
+  filter(!is.na(title) & !is.na(book_count)) |> 
+  select(title, book_count) |> 
+  top_n(n = 20, wt = book_count) |> 
+  mutate(new_title = case_when(
   is.na(str_locate(title, " ")[, 1]) ~ title, 
-  .default = str_sub(title, 1, str_locate(title, " ")[, 1] - 1)
-)) |> select(title = new_title, book_count) |> arrange(-book_count)
+  .default = str_sub(title, 1, str_locate(title, " ")[, 1] - 1))) |> 
+  select(title = new_title, book_count) |> 
+  arrange(-book_count)
+ 
+top3_languages <- paste(book_counts[1:3, 1, drop = TRUE], collapse = ", ")
+
+
 
 ```
 So, the above table represents the programming languages having the most books. So, as we can see Java, JavaScript and Python has the most number of books published. 
@@ -79,7 +90,18 @@ Let us draw a visualization of the above plot.
 ```{r plot_books, include=TRUE, echo=TRUE}
 
 
-p_bookcounts <- book_counts |> ggplot() + geom_col(mapping = aes(x = book_count, y = reorder(title, book_count), fill = title), show.legend = FALSE) + scale_fill_manual(values = c25) + theme(plot.title = element_text(face = "bold")) + labs(x = "Book Count", y = "Languages", title = "Programming Languages & Book Counts", subtitle = "Java, JavaScript & Python have most books !!!", caption = "Arnab Panja\n Tidy Tuesday Year 2023 Week 13")
+p_bookcounts <- book_counts |> 
+  ggplot() + geom_col(mapping = aes(x = book_count, 
+                                    y = reorder(title, book_count), 
+                                    fill = title), 
+                      show.legend = FALSE) + 
+  scale_fill_manual(values = c25) + 
+  theme(plot.title = element_text(face = "bold")) + 
+  labs(x = "Book Count", 
+       y = "Languages", 
+       title = "Programming Languages & Book Counts", 
+       subtitle = str_glue(top3_languages, " have the most books !!!"), 
+       caption = "Arnab Panja\n Tidy Tuesday Year 2023 Week 13")
 
 p_bookcounts
 
