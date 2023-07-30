@@ -1,9 +1,9 @@
+# A Program to parse pdf files ---------------
+
 library(stringr, warn.conflicts = FALSE)
 library(pdftools, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2, warn.conflicts = FALSE)
-
-
 
 pdf_text <- pdftools::pdf_text(pdf = "C:/Users/lenovo/Downloads/test_pdf.pdf")
 
