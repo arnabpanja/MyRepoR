@@ -428,6 +428,61 @@ practice_output <- inner_join(x = practice_data,
 head(practice_output, 20)
 
 
+# R4DS Slack Question ---- 30th July 2023
+
+library(dplyr, warn.conflicts = FALSE)
 
 
+df <-
+  data.frame(device_id = c(123,123,1234,12345, 321,321)
+             ,activation_date = c('1/18/2022','1/18/2022','5/21/2023','6/22/2021','8/18/2022','8/18/2022')
+             ,import_date = c('5/14/2023','3/1/2023','8/1/2023','8/1/2023','6/10/2023','1/18/2022')
+             ,col4 = c(NA , NA, 1, 2, 'a','b'))
+
+nrow(df)
+
+rand_add <- sample(1:75000, size = 60000, replace = FALSE)
+
+my_list <- vector(mode = "list", length = length(rand_add))
+
+for(i in seq_along(rand_add)){
+  
+  my_list[[i]] <- df |> mutate(device_id = device_id + rand_add[[i]])
+  
+}
+
+my_new_df <- do.call(rbind, my_list)
+
+nrow(my_new_df)
+
+print(Sys.time())
+
+my_new_df_2 <-  my_new_df |> 
+  group_by(device_id, activation_date) |> 
+  mutate(activation_date = case_when(
+    ((n() > 1) & (import_date < max(import_date))) ~ NA, 
+    TRUE ~ activation_date)) |> 
+  ungroup()
+
+head(my_new_df_2)
+
+print(Sys.time())
+
+
+print(Sys.time())
+
+my_new_df_3 <- my_new_df  |>  
+  filter(!is.na(activation_date) | is.na(activation_date)) |> 
+  group_by(device_id, activation_date)  |>  
+  filter(n() > 1 | n() == 1) |> 
+  mutate(activation_date = case_when(import_date < max(import_date) ~ NA, 
+                                     TRUE ~activation_date)) |> 
+  ungroup()
+
+head(my_new_df_3)
+
+print(Sys.time())
+
+
+all.equal(my_new_df_2, my_new_df_3)
 
