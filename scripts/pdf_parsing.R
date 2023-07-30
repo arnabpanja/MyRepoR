@@ -1,6 +1,8 @@
 library(stringr, warn.conflicts = FALSE)
 library(pdftools, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
+library(ggplot2, warn.conflicts = FALSE)
+
 
 
 pdf_text <- pdftools::pdf_text(pdf = "C:/Users/lenovo/Downloads/test_pdf.pdf")
@@ -31,17 +33,19 @@ for(page_no in seq_along(pdf_text)){
                             pattern = ",", 
                             simplify = FALSE)[[1]]
   
-  page_list <- vector(mode = "list", length = 3)
+  n_cols <- 3
+  
+  page_list <- vector(mode = "list", length = n_cols)
   
   
-  for(i in 0:2){
+  for(i in 0:(n_cols-1)){
     
-    page_list[[i + 1]] = page_vec[(seq_along(page_vec) %% 3) == i]
+    page_list[[i + 1]] = page_vec[(seq_along(page_vec) %% n_cols) == i]
     
   }
   
   page_df <- as.data.frame(do.call(cbind, page_list)) |> 
-    (\(x) x[, c(2:3, 1)])()
+    (\(x) x[, c(2:n_cols, 1)])()
   
   
   page_df <- page_df |> slice(4:nrow(page_df)) |> 
@@ -58,29 +62,45 @@ for(page_no in seq_along(pdf_text)){
   
 }
 
-marks_tibble <- do.call(rbind, marks_list)
+marks_tibble <- do.call(rbind, marks_list) |> 
+  as_tibble()
 
-marks_tibble$paper_code <- rep(132941, nrow(marks_tibble))
+n_paper <- 132941
 
-marks_tibble <- marks_tibble |> select(4, 1:3)
-
-View(marks_tibble)
-
-
-
-
-
-
-
-
-
-
-
+marks_tibble <- marks_tibble |> 
+  mutate(paper_code = rep(n_paper, nrow(marks_tibble)), 
+         subject = case_when(
+           Question_No <= 45 ~ "Maths", 
+           (Question_No >= 103 & Question_No <= 117) ~ "Physics", 
+           (Question_No >= 145 & Question_No <= 159) ~ "Chemistry", 
+           (Question_No >= 175 & Question_No <= 189) ~ "Biology", 
+           TRUE ~ NA
+         )) |> 
+  filter(!is.na(subject)) |> 
+  select(paper_code, subject, 1:n_cols)
 
 
+p_sat_marks <- marks_tibble |> group_by(paper_code, subject) |> 
+  summarise(cnt = n(), 
+            marks_obt = sum(Marks), 
+            percent_mark = round(marks_obt/cnt, digits = 2) * 100, 
+            .groups = "drop") |>
+  ggplot() + 
+  geom_col(mapping = aes(x = percent_mark, 
+                         y = reorder(subject, percent_mark), 
+                         fill = subject), show.legend = FALSE) + 
+  geom_text(mapping = aes(x = percent_mark, 
+                          y = reorder(subject, percent_mark), 
+                          label = percent_mark), 
+            hjust = "right", 
+            fontface = "bold", nudge_x = -0.5, color = "white") + 
+  theme_bw() + 
+  labs(x = "Percentage", 
+       y = "Subject", 
+       title = "Ashmita Panja - Class 7 - SAT - Phase 1", 
+       caption = "R Programming - ggplot")
 
 
 
-
-
+p_sat_marks
 
