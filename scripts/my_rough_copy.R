@@ -434,20 +434,24 @@ library(dplyr, warn.conflicts = FALSE)
 
 
 df <-
-  data.frame(device_id = c(123,123,1234,12345, 321,321)
-             ,activation_date = c('1/18/2022','1/18/2022','5/21/2023','6/22/2021','8/18/2022','8/18/2022')
-             ,import_date = c('5/14/2023','3/1/2023','8/1/2023','8/1/2023','6/10/2023','1/18/2022')
-             ,col4 = c(NA , NA, 1, 2, 'a','b'))
+  data.frame(device_id = c(123,123,1234,12345, 321,321, 'aaa','bbb')
+             ,activation_date = c('1/18/2022','1/18/2022','5/21/2023','6/22/2021','8/18/2022','8/18/2022', NA, NA)
+             ,import_date = c('5/14/2023','3/1/2023','8/1/2023','8/1/2023','6/10/2023','1/18/2022', '1/1/2022', '1/1/2022')
+             ,col4 = c(NA , NA, 1, 2, 'a','b','c','d'))
+
+df
+
 
 nrow(df)
 
-rand_add <- sample(1:75000, size = 60000, replace = FALSE)
+rand_add <- sample(1:75000, size = 45000, replace = FALSE) |> as.character()
+
 
 my_list <- vector(mode = "list", length = length(rand_add))
 
 for(i in seq_along(rand_add)){
   
-  my_list[[i]] <- df |> mutate(device_id = device_id + rand_add[[i]])
+  my_list[[i]] <- df |> mutate(device_id = str_c(device_id, rand_add[[i]]))
   
 }
 
@@ -455,19 +459,25 @@ my_new_df <- do.call(rbind, my_list)
 
 nrow(my_new_df)
 
+my_new_df
+
+# Approach 1
+
 print(Sys.time())
 
 my_new_df_2 <-  my_new_df |> 
   group_by(device_id, activation_date) |> 
   mutate(activation_date = case_when(
-    ((n() > 1) & (import_date < max(import_date))) ~ NA, 
-    TRUE ~ activation_date)) |> 
+      import_date < max(import_date) ~ NA, 
+      TRUE ~ activation_date
+    )) |> 
   ungroup()
 
 head(my_new_df_2)
 
 print(Sys.time())
 
+# Original Approach 
 
 print(Sys.time())
 
