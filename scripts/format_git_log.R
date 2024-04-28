@@ -13,15 +13,17 @@ i_file_data <- i_file_data[nchar(i_file_data) > 0]
 
 
 
-commit_indexes <- which(str_detect(i_file_data, pattern = "^commithash="))
+commit_indexes <- which(str_detect(i_file_data, 
+                                   pattern = "^commithash="))
 
-list_length <- length(i_file_data) - sum(str_detect(i_file_data, pattern = "^commithash="))
+list_length <- length(i_file_data) - sum(str_detect(i_file_data, 
+                                                    pattern = "^commithash="))
 
-list_length
 
 
 file_list <- vector(mode = "list", 
                     length = list_length)
+
 
 k <- 1
 
@@ -46,7 +48,8 @@ for(i in seq_along(commit_indexes)){
                                          pattern = "\\t", 
                                          replacement = ";"), 
                          pattern = " ", 
-                         replacement = ""))
+                         replacement = ""), 
+                       ";") # for old file name in case of delete 
     
     file_list[[k]] <- full_line
     
@@ -59,7 +62,8 @@ for(i in seq_along(commit_indexes)){
   
 }
 
-my_updated_list <- vector(mode = "list", length = length(file_list))
+my_updated_list <- vector(mode = "list", 
+                          length = length(file_list))
 
 for(i in seq_along(file_list)){
   
@@ -71,7 +75,15 @@ for(i in seq_along(file_list)){
 
 
 
-my_final_df <- do.call(rbind, my_updated_list) |> as.data.frame() 
+my_final_df <- do.call(rbind, my_updated_list) |> 
+  as.data.frame() |> 
+  setNames(c("commit_hash", 
+             "creator", 
+             "created_on", 
+             "commit_message", 
+             "change_type", 
+             "file_name", 
+             "old_file_name"))
 
 View(my_final_df)
 
