@@ -1,34 +1,36 @@
 library(stringr, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
 
-
+# the git log file which needs to be formatted ---- 
 file_path = "C:/Users/lenovo/Desktop/bb.csv"
 
+# the field separators ---- 
 field_separator <- ";"
 max_separator <- 6
 
-# read the file data 
+# read the file data ----
 i_file_data = readLines(con = file_path)
 
 
-# remove the empty lines 
+# remove the empty lines ----
 i_file_data <- i_file_data[nchar(i_file_data) > 0]
 
 
-
-
+# find the lines with commit hash numbers ---- 
 commit_indexes <- which(str_detect(i_file_data, 
                                    pattern = "^commithash="))
 
-list_length <- length(i_file_data) - sum(str_detect(i_file_data, 
+# the length after merging the commit hash and file name lines ---- 
+reduced_length <- length(i_file_data) - sum(str_detect(i_file_data, 
                                                     pattern = "^commithash="))
 
 
 
-file_list <- vector(mode = "list", 
-                    length = list_length)
+reduced_file_data <- vector(mode = "character", 
+                    length = reduced_length)
 
 
-k <- 1
+reduced_index <- 1
 
 for(i in seq_along(commit_indexes)){
   
@@ -41,7 +43,8 @@ for(i in seq_along(commit_indexes)){
   repeat{
     
     
-    if((j > length(i_file_data)) | str_detect(i_file_data[j], pattern = "^commithash=")){
+    if((j > length(i_file_data)) | str_detect(i_file_data[j], 
+                                              pattern = "^commithash=")){
       break
     }
     
@@ -58,9 +61,9 @@ for(i in seq_along(commit_indexes)){
     full_line <- str_c(full_line, sep_to_add)
     
     
-    file_list[[k]] <- full_line
+    reduced_file_data[[reduced_index]] <- full_line
     
-    k <- k + 1
+    reduced_index <- reduced_index + 1
     j <- j + 1
     
   }
@@ -70,7 +73,7 @@ for(i in seq_along(commit_indexes)){
 }
 
 my_updated_list <- vector(mode = "list", 
-                          length = length(file_list))
+                          length = length(reduced_file_data))
 
 for(i in seq_along(file_list)){
   
@@ -84,13 +87,16 @@ for(i in seq_along(file_list)){
 
 
 my_final_df <- do.call(rbind, my_updated_list) |> 
-  as.data.frame() |> 
+  as_tibble() |> 
   setNames(c("commit_hash", 
              "creator", 
              "created_on", 
              "commit_message", 
              "change_type", 
              "file_name", 
-             "old_file_name"))
-
+             "old_file_name")) |> 
+  mutate(commit_hash = str_sub(commit_hash, 
+                               start = 1, 
+                               end = 7))
 View(my_final_df)
+
