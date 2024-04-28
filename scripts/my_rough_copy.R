@@ -496,3 +496,52 @@ print(Sys.time())
 
 all.equal(my_new_df_2, my_new_df_3)
 
+
+
+# R4DS Slack Question - help-r-general 
+
+library(dplyr, warn.conflicts = FALSE)
+library(lubridate, warn.conflicts = FALSE)
+options(tibble.width = Inf)
+
+
+df <- structure(list(order_id = 1:8, cust_id = c(1L, 1L, 2L, 2L, 3L, 
+                                               3L, 4L, 5L), 
+                   order_date = structure(c(18276, 18302, 18277, 18317, 18271, 
+                                            18312, 18281, 18312), class = "Date"), 
+                   amount = c(150L, 150L, 150L, 150L, 150L, 150L, 150L, 150L)), 
+              row.names = c(NA,-8L), class = c("tbl_df", "tbl", "data.frame"))
+
+df |>  arrange(cust_id, order_id)
+
+
+# Approach 1 
+# Do a join, compute the date diff 
+# and filter the ones where date diff <= 30 
+df |> arrange(cust_id, order_id) |> 
+  left_join(y = df, 
+            by = join_by(cust_id), 
+            relationship = "many-to-many") |> 
+  mutate(date_diff = time_length(interval(order_date.x, order_date.y), unit = "day")) |> 
+  filter((date_diff <= 30) & (order_id.y > order_id.x))
+
+# Approach 2
+# Not joining but using lag function 
+# to check the previous record
+# calculate the date diff 
+# and then filter the ones date diff <= 30
+df |> arrange(cust_id, order_id) |> 
+  mutate(prev_order_date = lag(order_date, 1), 
+         prev_cust_id = lag(cust_id, 1)) |>  
+  filter(prev_cust_id == cust_id) |>  
+  mutate(date_diff = order_date - prev_order_date) |> 
+  filter(date_diff <= 30) 
+
+
+
+
+
+         
+
+
+
