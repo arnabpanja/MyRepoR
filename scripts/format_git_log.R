@@ -94,15 +94,3 @@ my_final_df <- do.call(rbind, my_updated_list) |>
              "old_file_name"))
 
 View(my_final_df)
-
-
-
-
-
-
-
-
-
-
-
-
