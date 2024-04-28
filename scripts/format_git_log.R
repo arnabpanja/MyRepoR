@@ -3,6 +3,9 @@ library(stringr, warn.conflicts = FALSE)
 
 file_path = "C:/Users/lenovo/Desktop/bb.csv"
 
+field_separator <- ";"
+max_separator <- 6
+
 # read the file data 
 i_file_data = readLines(con = file_path)
 
@@ -29,7 +32,7 @@ k <- 1
 
 for(i in seq_along(commit_indexes)){
   
-  commit_line <- str_replace_all(i_file_data[commit_indexes[i]], 
+  commit_line <- str_replace(i_file_data[commit_indexes[i]], 
                                  pattern = "commithash=", 
                                  replacement = "")
   
@@ -46,10 +49,14 @@ for(i in seq_along(commit_indexes)){
                        str_replace_all(
                          str_replace_all(i_file_data[j], 
                                          pattern = "\\t", 
-                                         replacement = ";"), 
+                                         replacement = field_separator), 
                          pattern = " ", 
-                         replacement = ""), 
-                       ";") # for old file name in case of delete 
+                         replacement = "")) 
+    
+    sep_to_add <- rep(";", max_separator - (nchar(full_line) - nchar(str_replace_all(full_line, pattern = field_separator, replacement = ""))))
+    
+    full_line <- str_c(full_line, sep_to_add)
+    
     
     file_list[[k]] <- full_line
     
@@ -67,7 +74,8 @@ my_updated_list <- vector(mode = "list",
 
 for(i in seq_along(file_list)){
   
-  my_updated_list[[i]] <- str_trim(str_split(file_list[[i]], pattern = ";")[[1]], 
+  my_updated_list[[i]] <- str_trim(str_split(file_list[[i]], 
+                                             pattern = field_separator)[[1]], 
                                   side = "both")
   
   
@@ -86,11 +94,6 @@ my_final_df <- do.call(rbind, my_updated_list) |>
              "old_file_name"))
 
 View(my_final_df)
-
-
-
-
-
 
 
 
