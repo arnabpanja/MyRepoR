@@ -1,5 +1,6 @@
 library(stringr, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
+options(tibble.width = Inf)
 
 # the git log file which needs to be formatted ---- 
 file_path = "C:/Users/lenovo/Desktop/bb.csv"
@@ -87,7 +88,7 @@ for(i in seq_along(file_list)){
 
 
 my_final_df <- do.call(rbind, my_updated_list) |> 
-  as_tibble() |> 
+  as.data.frame() |> 
   setNames(c("commit_hash", 
              "creator", 
              "created_on", 
@@ -95,8 +96,10 @@ my_final_df <- do.call(rbind, my_updated_list) |>
              "change_type", 
              "file_name", 
              "old_file_name")) |> 
+  as_tibble() |> 
   mutate(commit_hash = str_sub(commit_hash, 
                                start = 1, 
                                end = 7))
-View(my_final_df)
+my_final_df
 
+View(my_final_df)
