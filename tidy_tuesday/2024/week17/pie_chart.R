@@ -25,13 +25,16 @@ cat(paste0(names(tt_data), "\n"))
 
 
 # find the number of objects launched  ----
-# per year for the last 8 years 
+# per year for the last 6 years
+
+years_to_check <- 6
+
 tt_sum <- tt_data |> 
   group_by(year) |> 
   summarize(sum_obj = sum(num_objects, 
                           na.rm = TRUE), 
                           .groups = "drop") |> 
-  top_n(n = 8, wt = year) |>
+  top_n(n = years_to_check, wt = year) |>
   arrange(-year)
 
 # View the data ----
@@ -52,7 +55,7 @@ p_pie_chart <- ggplot(data = tt_sum, mapping = aes(x = "", y = as.character(year
        y = "", 
        fill = "Year of Launch", 
        title = "Tidy Tuesday - Objects Launched into Space by Year", 
-       subtitle = str_glue("Almost {round(max(tt_sum$sum_obj)/min(tt_sum$sum_obj), digits = 0)} fold increase in the objects launched into space in the last {nrow(tt_sum)} years"), 
+       subtitle = str_glue("Almost {round(max(tt_sum$sum_obj)/min(tt_sum$sum_obj), digits = 0)} fold increase in the objects launched into space in the last {years_to_check} years"), 
        caption = "Tidy Tuesday - 2024 - Week 17 - ArnabP") + 
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5), 
