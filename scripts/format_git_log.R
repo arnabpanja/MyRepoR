@@ -2,8 +2,13 @@ library(stringr, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 options(tibble.width = Inf)
 
+# flushing out all variables from the environment
+
+rm(list = ls())
+
+
 # the git log file which needs to be formatted ---- 
-file_path = "C:/Users/lenovo/Desktop/bb.csv"
+file_path = "C:/Users/lenovo/Desktop/my_repo_r_git_log.csv"
 
 # the field separators ---- 
 field_separator <- ";"
@@ -76,9 +81,9 @@ for(i in seq_along(commit_indexes)){
 my_updated_list <- vector(mode = "list", 
                           length = length(reduced_file_data))
 
-for(i in seq_along(file_list)){
+for(i in seq_along(reduced_file_data)){
   
-  my_updated_list[[i]] <- str_trim(str_split(file_list[[i]], 
+  my_updated_list[[i]] <- str_trim(str_split(reduced_file_data[[i]], 
                                              pattern = field_separator)[[1]], 
                                   side = "both")
   
