@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### **Introduction**
 
-This write-up was prompted by a question in the **R4DS Online Learning Community** as how one can document the data frames used in a typical data analysis exercise. Of course we have excel as a spreadsheet tool to do this, but what if we need to do it using **R**.
+This write-up was prompted by a question in the **R4DS Online Learning Community** some time ago as to how one can document the data frames used in a typical data analysis exercise. Of course we have excel as a spreadsheet tool to do this, but what if we need to do it using **R**.
 
 So let us watch how we can go about creating a basic documentation of our data frames. An analysis involves a number of data frames and a documentation, accompanied by a entity relationship diagram lends a great deal of readability to the data analysis. We will use the palmer penguins data set to explain this approach. 
 
