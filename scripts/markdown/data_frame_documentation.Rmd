@@ -11,33 +11,31 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(palmerpenguins, warn.conflicts = FALSE)
-suppressPackageStartupMessages(library(data.table))
-library(dm, warn.conflicts = FALSE)
-library(DiagrammeR)
+
 ```
 
 ### **Introduction**
 
-Hello All !!! 
-Another little **RMARKDOWN** document. Now, what has prompted me to create this document ? 
+This write-up was prompted by a question in the **R4DS Online Learning Community** as how one can document the data frames used in a typical data analysis exercise. Of course we have excel as a spreadsheet tool to do this, but what if we need to do it using **R**.
 
-There are two drivers for it 
+So let us watch how we can go about creating a basic documentation of our data frames. An analysis involves a number of data frames and a documentation, accompanied by a entity relationship diagram lends a great deal of readability to the data analysis. We will use the palmer penguins data set to explain this approach. 
 
-#. The **comment** function in **R** that can help describe a column in a data frame
-#. A question in the **R4DS Online Learning Community** on how to document a data frame. 
+Let us load the libraries first 
 
-So we have a lot of methods of documenting our data model/data frame and we can use Excel to do it. There are few commercial tools out there in the market, which when given a set of database tables, can re-engineer an entity relationship diagram. 
-But the question is, given that we do NOT want to use Excel and we also do NOT want to use any commercial tool but still if we want to have some basic level of documentation using our favorite language in **R** then what could be a plausible approach.
+```{r load_libs, include=TRUE, echo=TRUE, warning=FALSE, message=FALSE}
+library(dm, warn.conflicts = FALSE)
+library(palmerpenguins, warn.conflicts = FALSE)
+library(data.table, warn.conflicts = FALSE)
+library(DiagrammeR, warn.conflicts = FALSE)
 
-This document may shed some light on this. 
+```
 
-So let us watch how we can go about creating a basic documentation of our data frames. An analysis involves a number of data frames and a documentation, accompanied by a model diagram does go a long way in making things self-explanatory. 
-
+We are using *palmerpenguins* package which has the dataset, *data.table* to use for data wrangling and *dm*, *DiagrammeR* to help create the relationship and draw the relationship 
+diagram. 
 
 #### **Palmer Penguins Data Set** 
 
-So let us load the Palmer Penguins dataset.  
+So let us load the Palmer Penguins data set.  
 
 ```{r load_df, include=TRUE, echo=TRUE}
 df.penguins <- as.data.table(penguins)
@@ -50,10 +48,10 @@ The **str** function shows the structure of the data frame at a glance.
 
 #### **The comment function**
 
-Not let us come to the first magic, the use of **comment** function. 
+Not let us come to the first part, the use of **comment** function. 
 We will use the **comment** function to document the variables/columns in the Palmer Penguins data set and this is how it works. 
 
-```{r docuemnt_df, include=TRUE, echo=TRUE}
+```{r docuemnt_df, include=TRUE, echo=TRUE, attr.source='.numberLines'}
 comment(df.penguins$species) <- "This field stores the species of the Penguin"
 
 comment(df.penguins$island) <- "This field stores the island of Palmer Archipelago"
@@ -74,7 +72,7 @@ comment(df.penguins$year) <- "This field is the year when the observation was re
 
 ```
 
-And how does the data frame look like after that ? 
+And how does the data frame look like after adding the comments ? 
 
 ```{r df_looks, include=TRUE, echo=TRUE}
 
@@ -222,9 +220,9 @@ dm_draw(dm = dict.dm.allkeys,
 
 ```
 
-So, coupled with the data frame documentation table, the above diagram does give us a picture of the data frames involved, with a reasonable description of it's important parts and a model diagram showing the relationships between them. 
+So, coupled with the data frame documentation table, the above diagram gives us a picture of the data frames involved, with a reasonable description of it's important columns and a model diagram showing the relationships between them. 
 
-So this is how, without using Excel, without using any commercial tools we can still generate a basic documentation of our data frames. 
+So this is how, without using Excel or any other commercial tools we can still generate a basic documentation of the data frames using the **R Programming Language**. 
 
 
 
