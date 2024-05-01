@@ -7,6 +7,7 @@ library(readr, warn.conflicts = FALSE)
 library(janitor, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
 options(tibble.width = Inf)
 
 
@@ -27,7 +28,7 @@ cat(paste0(names(tt_data), "\n"))
 # find the number of objects launched  ----
 # per year for the last 6 years
 
-years_to_check <- 6
+years_to_check <- 10
 
 tt_sum <- tt_data |> 
   group_by(year) |> 
@@ -71,8 +72,9 @@ p_pie_chart <- ggplot(data = tt_sum, mapping = aes(x = "", y = as.character(year
 p_pie_chart
 
 
+
 # save the plot ---- 
-ggsave(filename = "tidy_tuesday/2024/week17/p_pie_chart.png", 
-       plot = last_plot())
+ggsave(filename = "tidy_tuesday/2024/week17/p_pie_chart.pdf", 
+       plot = last_plot(), scale = 2)
 
 
