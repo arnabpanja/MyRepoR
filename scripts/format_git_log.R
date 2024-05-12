@@ -119,17 +119,22 @@ my_final_df <- do.call(rbind, my_updated_list) |>
          sort_field = as.numeric(format(created_on, "%Y%m")))
 
 
-my_final_df <- my_final_df |> arrange(created_on) |> group_by(month_year, sort_field) |> 
-  mutate(n = n()) |> ungroup() |> 
-  distinct(month_year, n, sort_field)
-
+my_final_df <- my_final_df |> 
+  arrange(created_on) |> 
+  group_by(month_year, sort_field) |> 
+  summarize(n = n(), .groups = "drop")
 
 
 p_git_act_plot <-  my_final_df |> 
   ggplot() + 
   geom_line(mapping = aes(x = reorder(month_year, sort_field), 
-                         y = n, group = 1), color = "lightgreen", linewidth = 1) + 
-  geom_point(mapping = aes(x = reorder(month_year, sort_field), y = n), stat = "identity", size = 2) + 
+                         y = n, group = 1), 
+            color = "lightgreen", 
+            linewidth = 1) + 
+  geom_point(mapping = aes(x = reorder(month_year, sort_field), 
+                           y = n), 
+             stat = "identity", 
+             size = 2) + 
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.7)) + 
   scale_y_continuous(breaks = seq(0, max(my_final_df$n), 10)) + 
@@ -141,18 +146,6 @@ p_git_act_plot
 
 ggsave(filename = "plots/git_log_plots/p_git_act_plot.pdf", 
        plot = p_git_act_plot)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
