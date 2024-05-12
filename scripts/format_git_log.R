@@ -1,10 +1,18 @@
-library(stringr, warn.conflicts = FALSE)
-library(dplyr, warn.conflicts = FALSE)
-options(tibble.width = Inf)
-
-# flushing out all variables from the environment
+# flushing out all variables from the environment --- 
 
 rm(list = ls())
+
+
+# load the libraries --------------
+library(stringr, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2, warn.conflicts = FALSE)
+library(lubridate, warn.conflicts = FALSE)
+
+
+options(tibble.width = Inf)
+
+
 
 
 # the git log file which needs to be formatted ---- 
@@ -104,7 +112,47 @@ my_final_df <- do.call(rbind, my_updated_list) |>
   as_tibble() |> 
   mutate(commit_hash = str_sub(commit_hash, 
                                start = 1, 
-                               end = 7))
-my_final_df
+                               end = 7), 
+         created_on = parse_date_time(created_on, 
+                         orders = "%a %b %d %H:%M:%S %Y %z"), 
+         month_year = format(created_on, "%b-%y"), 
+         sort_field = as.numeric(format(created_on, "%Y%m")))
 
-View(my_final_df)
+
+my_final_df <- my_final_df |> arrange(created_on) |> group_by(month_year, sort_field) |> 
+  mutate(n = n()) |> ungroup() |> 
+  distinct(month_year, n, sort_field)
+
+
+
+p_git_act_plot <-  my_final_df |> 
+  ggplot() + 
+  geom_line(mapping = aes(x = reorder(month_year, sort_field), 
+                         y = n, group = 1), color = "lightgreen", linewidth = 1) + 
+  geom_point(mapping = aes(x = reorder(month_year, sort_field), y = n), stat = "identity", size = 2) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.7)) + 
+  scale_y_continuous(breaks = seq(0, max(my_final_df$n), 10)) + 
+  labs(x = "Month - Year", 
+       y = "Commits", 
+       title = "Activities in the Git Repository ...")
+
+p_git_act_plot
+
+ggsave(filename = "plots/git_log_plots/p_git_act_plot.pdf", 
+       plot = p_git_act_plot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
