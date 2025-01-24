@@ -538,10 +538,44 @@ df |> arrange(cust_id, order_id) |>
   filter(date_diff <= 30) 
 
 
+# DSLC Explore Wrangle Question 
+
+library(dplyr, warn.conflicts = FALSE)
+library(purrr, warn.conflicts = FALSE)
+
+
+# example data frame A ---------
+df_a <- data.frame(id = 1:4, 
+                   col_a = sample(1:10, 4, replace = FALSE), 
+                   col_b = rep(x = 0, 4), 
+                   col_c = sample(50:60, 4, replace = FALSE), 
+                   col_d = rep(x = 0, 4))
+
+
+# example data frame B ---------
+df_b <- data.frame(id = 1:4, 
+                   col_b = c(99, 199, 299, 399), 
+                   col_d = c(499, 599, 699, 799))
+
+# new data frame C with 0 replaced from data frame B ----   
+df_c <- df_a |> bind_cols(map_df(.x = tibble(df_a$id) |> setNames("new_col_b"), 
+              .f = \(x) df_b[df_b$id == x, "col_b"])) |> 
+  bind_cols(map_df(.x = tibble(df_a$id) |> setNames("new_col_d"), 
+                   .f = \(x) df_b[df_b$id == x, "col_d"])) |> 
+  mutate(col_b = case_when(col_b == 0 ~ new_col_b, 
+                              .default = col_b), 
+         col_d = case_when(col_d == 0 ~ new_col_d, 
+                           .default = col_d)) |> 
+  select(-c("new_col_b", "new_col_d"))
 
 
 
-         
+df_c
+
+
+
+
+
 
 
 
