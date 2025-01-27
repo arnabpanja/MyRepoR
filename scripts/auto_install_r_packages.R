@@ -1,6 +1,8 @@
 # WRITE THE LIST OF PACKAGES INSTALLED  ----
 # DO THIS AFTER R IS UPGRADED TO THE NEW VERSION
 # OTHERWISE PICK UP THE EXECUTION FROM LINE 23 
+# EXECUTION TIME = 55 MINS. APPROX. 
+# LAST EXECUTED WHILE UPGRADING TO 4.4.2 on 26th JAN 25
 
 # get the list of installed packages ----------
 installed_pkgs_df <- as.data.frame(installed.packages(), 
@@ -45,15 +47,16 @@ pkg_installed_status_list <- vector(mode = "list",
 # try installing the list of packages ------------
 for (i in seq_along(pkg_list_vec)){
   
-  # declare a data frame to hold the installation status ----
-  if(i == 1) 
-    pkg_install_status_df <- data.frame()
-  
   # send a message to the terminal -----
   cat(paste0("INSTALLING PACKAGE ", pkg_list_vec[i], " .... "))
   
-  # install the packages ----
-  install.packages(pkg_list_vec[i])
+  # if the package is not installed already -----
+  
+  if (!(pkg_list_vec[i] %in% as.data.frame(installed.packages()[, "Package", drop = TRUE]))){
+    # install the package ----
+    install.packages(pkg_list_vec[i])
+  }
+  
   
   # get the list of installed packages to find if it was installed ----
   get_pkg_vec <- installed.packages()[, "Package", drop = TRUE] 
@@ -61,8 +64,8 @@ for (i in seq_along(pkg_list_vec)){
   # populate the status of installation ----
   pkg_installed_status_list[[i]] <- c(pkg = pkg_list_vec[i], 
                                             status = ifelse(pkg_list_vec[i] %in% get_pkg_vec, 
-                                                            "installed", 
-                                                            "not installed"))
+                                                            "Installed", 
+                                                            "Not Installed"))
   
   
 }
